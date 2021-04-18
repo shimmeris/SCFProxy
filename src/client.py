@@ -7,7 +7,7 @@ import mitmproxy
 from mitmproxy.net.http import Headers
 
 
-scf_server = "https://service-oxef0yb3-1256649143.sh.apigw.tencentcs.com/release/forward"
+scf_server = ""
 SCF_TOKEN = "Token"
 
 
