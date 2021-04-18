@@ -1,5 +1,5 @@
 # SCFProxy
-一个基于[腾讯云函数服务](https://console.cloud.tencent.com/scf/list)的代理池。
+一个基于[腾讯云函数服务](https://console.cloud.tencent.com/scf/list)的免费代理池，代理池的出口 ip 均为腾讯 CDN。
 
 ## 安装
 ```bash
@@ -36,6 +36,12 @@ pip3 install -r requirements.txt
 ```bash
 mitmdump -s client.py -p 8081 --no-http2
 ```
+
+## 效果
+挂上代理获取当前 ip 为 129.211.81.195:
+![ip](img/ip.png)
+查询 ipinfo 为腾讯的服务器:
+![tencent](img/tencent.png)
 
 
 ## 限制
