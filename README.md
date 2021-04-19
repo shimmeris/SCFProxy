@@ -1,5 +1,5 @@
 # SCFProxy
-一个基于[腾讯云函数服务](https://console.cloud.tencent.com/scf/list)的免费代理池，代理池的出口 ip 均为腾讯 CDN。
+一个基于[腾讯云函数服务](https://console.cloud.tencent.com/scf/list)的免费代理池。
 
 ## 安装
 ```bash
@@ -43,6 +43,8 @@ mitmdump -s client.py -p 8081 --no-http2
 查询 ipinfo 为腾讯的服务器:
 ![tencent](img/tencent.png)
 
+### ip 数量
+经测试 200 个请求共分配了 71 个 ip。
 
 ## 限制
 1. 请求与响应流量包不能大于 6M
