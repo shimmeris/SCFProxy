@@ -56,7 +56,7 @@ push_back_host = 等后续配置 API 网关后填写
 4. 攻击者连接 ws://apigate，输入 auth PASSWORD 认证为用户，之后正常发送命令即可。
 ![执行命令](img/cmd.jpg)
 
-ws 连接后可执行的命令：
+ws 连接后可执行的命令：
 ```shell
 auth PASSWORD 将当前连接认证为用户，只有用户能接收未认证连接发送的信息
 close 关闭当前连接
