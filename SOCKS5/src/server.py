@@ -3,7 +3,6 @@ import socket
 import select
 
 
-# The reverse push link for API gateway. API网关的反向推送链接
 bridge_ip = ""
 bridge_port = 1234
 
