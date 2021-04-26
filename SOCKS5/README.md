@@ -1,4 +1,4 @@
-# SOSKS
+# SOCKS5
 
 ## 安装
 上传 socks_client 文件夹到 VPS 上，执行安装
