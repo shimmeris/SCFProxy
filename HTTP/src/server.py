@@ -1,8 +1,9 @@
 # -*- coding: utf8 -*-
+import json
 import pickle
 from base64 import b64decode, b64encode
 
-from requests import Session
+import requests
 
 
 SCF_TOKEN = "Token"
@@ -29,10 +30,11 @@ def main_handler(event: dict, context: dict):
         return authorization()
 
     data = event["body"]
-    prepped = pickle.loads(b64decode(data))
-    with Session() as s:
-        # Prohibit automatic redirect to avoid network errors such as connection reset
-        r = s.send(prepped, verify=False, allow_redirects=False)
+    kwargs = json.loads(data)
+    kwargs['data'] = b64decode(kwargs['data'])
+    # Prohibit automatic redirect to avoid network errors such as connection reset
+    r = requests.request(**kwargs, verify=False, allow_redirects=False)
+
 
     # TODO: REFACTOR NEEDED. Return response headers and body directly.
     # There are many errors occured when setting headers to r.headers with some aujustments(https://cloud.tencent.com/document/product/583/12513).

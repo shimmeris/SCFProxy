@@ -2,7 +2,7 @@ import pickle
 from urllib.parse import urlparse
 from base64 import b64encode, b64decode
 
-import requests
+import json
 import mitmproxy
 from mitmproxy.net.http import Headers
 
@@ -12,23 +12,20 @@ SCF_TOKEN = "Token"
 
 
 def request(flow: mitmproxy.http.HTTPFlow):
-    # TODO: Just send request kwargs rather than serialized `PreparedRequest` object.
     r = flow.request
-    req = requests.Request(
-        method=r.method,
-        url=r.pretty_url,
-        headers=r.headers,
-        cookies=r.cookies,
-        params=r.query,
-        data=r.raw_content,
-    )
-    prepped = req.prepare()
-    serialized_req = pickle.dumps(prepped)
+    data = {
+        "method": r.method,
+        "url": r.pretty_url,
+        "headers": dict(r.headers),
+        "cookies": dict(r.cookies),
+        "params": dict(r.query),
+        "data": b64encode(r.raw_content).decode('ascii'),
+    }
 
     flow.request = flow.request.make(
         "POST",
         url=scf_server,
-        content=b64encode(serialized_req),
+        content=json.dumps(data),
         headers={
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Encoding": "gzip, deflate, compress",
