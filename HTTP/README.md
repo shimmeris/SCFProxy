@@ -1,5 +1,6 @@
 # HTTP Proxy
 ## 安装
+需 Python >= 3.8
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
