@@ -13,12 +13,12 @@ pip3 install -r requirements.txt
 参见 HTTP Proxy 的[代理配置](https://github.com/shimmeris/SCFProxy/tree/main/HTTP)
 
 注意事项
-1. 修改 server.py 中的 `bridge_ip` 与 `bridge_port` 变量为自己的 VPS 的 ip 及开启的监听的端口
-2. 修改云函数超时时间为 600s
+1. 修改 server.py 中的 `bridge_ip` 与 `bridge_port` 变量为自己的 VPS 的 ip 及开启监听的端口
+2. 修改云函数超时时间为 600s（因此一个 SOCKS5 长连接最多维持 15m）
 
 ## 客户端配置
 执行 socks5.py（仅支持 Python >= 3.8)
-```python
+```bash
 $ python3 socks5.py -h
 usage: socks5.py [-h] -u SCF_URL [-l ip] -sp SOCKS_PORT -bp BRIDGE_PORT [--user USER] [--passwd PASSWD]
 SCF Socks5 Proxy Server
@@ -43,7 +43,7 @@ optional arguments:
 
 常用语法
 ```bash
-python socks5.py -u "https://service-xxx.sh.apigw.tencentcs.com/release/xxx" -bp 53203 -sp 53201 --user test --passwd test
+python3 socks5.py -u "https://service-xxx.sh.apigw.tencentcs.com/release/xxx" -bp 53203 -sp 53201 --user test --passwd test
 ```
 
 ## 免责声明
