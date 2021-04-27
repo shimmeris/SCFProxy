@@ -15,6 +15,8 @@ pip3 install -r requirements.txt
 
 3. 修改 server.py 中的 `SCF_TOKEN` 为随机值（该值将用于鉴权），并将相同的值填入 client.py 中的 `SCF_TOKEN`，将 server.py 代码复制粘贴到编辑器中。
 4. 点击完成
+5. 如需更多 ip 数，可重复上述步骤创建函数服务，地域选择不同区域。
+![地区列表](img/regions.png)
 
 ### 触发器配置
 1. 成功创建函数后进入 触发管理，创建触发器
@@ -24,7 +26,7 @@ pip3 install -r requirements.txt
 2. 触发方式选择 API 网关触发，其他保持不变即可
 ![网关](img/gateway.jpg)
 
-3. 将触发器中的访问路径粘贴至 client.py 中 `scf_server` 变量。
+3. 将触发器中的访问路径添加至 client.py 中 `scf_servers` 变量中，以逗号 `,` 分隔。
 
 
 ## 客户端配置
@@ -43,7 +45,7 @@ mitmdump -s client.py -p 8081 --no-http2
 ![tencent](img/tencent.png)
 
 ### ip 数量
-经测试 200 个请求共分配了 71 个 ip。
+经测试，单个地区服务器 200 个请求分配 ip 数量在 60-70 左右。
 
 ## 限制
 1. 请求与响应流量包不能大于 6M

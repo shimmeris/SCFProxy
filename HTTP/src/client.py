@@ -1,4 +1,6 @@
 import pickle
+from random import choice
+from typing import Tuple
 from urllib.parse import urlparse
 from base64 import b64encode, b64decode
 
@@ -7,11 +9,12 @@ import mitmproxy
 from mitmproxy.net.http import Headers
 
 
-scf_server = ""
+scf_servers: Tuple[str] = ()
 SCF_TOKEN = "Token"
 
 
 def request(flow: mitmproxy.http.HTTPFlow):
+    scf_server = choice(scf_servers)
     r = flow.request
     data = {
         "method": r.method,
@@ -19,7 +22,7 @@ def request(flow: mitmproxy.http.HTTPFlow):
         "headers": dict(r.headers),
         "cookies": dict(r.cookies),
         "params": dict(r.query),
-        "data": b64encode(r.raw_content).decode('ascii'),
+        "data": b64encode(r.raw_content).decode("ascii"),
     }
 
     flow.request = flow.request.make(
@@ -49,9 +52,10 @@ def response(flow: mitmproxy.http.HTTPFlow):
 
     if flow.response.status_code == 433:
         flow.response.headers = Headers(content_type="text/html;charset=utf-8")
-        flow.response.content="<html><body>操作已超过云函数服务最大时间限制，可在函数配置中修改执行超时时间</body></html>",
+        flow.response.content = (
+            "<html><body>操作已超过云函数服务最大时间限制，可在函数配置中修改执行超时时间</body></html>",
+        )
         return
-
 
     if flow.response.status_code == 200:
         body = flow.response.content.decode("utf-8")
