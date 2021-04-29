@@ -18,6 +18,7 @@ async def socks_handle(
 
     await socks5_auth(client, args)
     remote_addr, port = await socks5_connect(client)
+
     client.target = f"{remote_addr}:{port}"
     uid = shortuuid.ShortUUID().random(length=UID_LENGTH)
     uid_socket[uid] = client
@@ -71,7 +72,6 @@ async def socks5_connect(client: Conn):
     if ver != 0x05:
         client.close()
         cancel_task(f"Invalid socks5 version: {ver}")
-
     if cmd != 1:
         client.close()
         cancel_task(f"Invalid socks5 cmd type: {cmd}")
@@ -90,13 +90,6 @@ async def socks5_connect(client: Conn):
 
     port = int.from_bytes(await client.read(2), byteorder="big")
 
-    # res = (
-    #     b"\x05\x00\x00"
-    #     + chr(atyp).encode("ascii")
-    #     + address
-    #     + port.to_bytes(2, byteorder="big")
-    # )
-
     # Should return bind address and port, but it's ok to just return 0.0.0.0
     await client.write(b"\x05\x00\x00\x01\x00\x00\x00\x00\x00\x00")
     return remote_addr, port
@@ -114,6 +107,7 @@ async def main():
     print_time(f"SOCKS5 Server listening on: {args.listen}:{args.socks_port}")
     await asyncio.start_server(scf_handle, args.listen, args.bridge_port)
     print_time(f"Bridge Server listening on: {args.listen}:{args.bridge_port}")
+
     try:
         await socks_server.serve_forever()
     except asyncio.CancelledError:
