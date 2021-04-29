@@ -1,12 +1,12 @@
 import asyncio
 
-from models import Conn
-from utils import print_time, uid_socket, UID_LENGTH
+from utils import print_time
+from models import Conn, uid_socket
 
 
 async def scf_handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     bridge = Conn("Bridge", reader, writer)
-    uid = await bridge.read(UID_LENGTH)
+    uid = await bridge.read(4)
     uid = uid.decode("ascii")
     client = uid_socket[uid]
     bridge.target = client.target

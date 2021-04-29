@@ -3,13 +3,8 @@ import asyncio
 import argparse
 from datetime import datetime, timezone, timedelta
 
-from models import LRUDict
-
 
 timezone(timedelta(hours=8))
-
-uid_socket = LRUDict(150)
-UID_LENGTH = 4
 
 
 def print_time(data):

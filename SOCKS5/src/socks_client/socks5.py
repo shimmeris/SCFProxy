@@ -6,9 +6,9 @@ from functools import partial
 import uvloop
 import shortuuid
 
-from models import Conn, http
 from bridge import scf_handle
-from utils import print_time, uid_socket, UID_LENGTH, parse_args, cancel_task
+from models import Conn, http, uid_socket
+from utils import print_time, parse_args, cancel_task
 
 
 async def socks_handle(
@@ -20,7 +20,7 @@ async def socks_handle(
     remote_addr, port = await socks5_connect(client)
 
     client.target = f"{remote_addr}:{port}"
-    uid = shortuuid.ShortUUID().random(length=UID_LENGTH)
+    uid = shortuuid.ShortUUID().random(length=4)
     uid_socket[uid] = client
 
     data = {"host": remote_addr, "port": port, "uid": uid}

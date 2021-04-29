@@ -64,3 +64,4 @@ class Request:
 
 
 http = Request()
+uid_socket = LRUDict(150)
