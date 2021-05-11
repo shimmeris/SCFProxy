@@ -5,10 +5,14 @@
 ## 网关配置
 1. 在[API 网关](https://console.cloud.tencent.com/apigateway/service)中新建服务，访问方式选择公网，其余不变
 2. 进入服务见面，新建 API 配置如下，进入下一步
+
 ![API](img/API.png)
+
 3. 配置后端类型为**公网URL/IP**，后端域名配置自己的 CS 服务器（受限于网关开放的端口，CS 服务器端口也只能配置为 80、443），后端超时拉满即可。
-![url](img/url.png)
+
+![url](img/url.jpg)
 
 ## CS 配置
 将网关地址填入 host 监听器即可
-![listener](img/listener.png)
+
+![listener](img/listener.jpg)
