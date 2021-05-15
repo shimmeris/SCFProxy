@@ -14,7 +14,7 @@ pip3 install -r requirements.txt
 
 注意事项
 1. 修改 server.py 中的 `bridge_ip` 与 `bridge_port` 变量为自己的 VPS 的 ip 及开启监听的端口
-2. 修改云函数超时时间为 600s（因此一个 SOCKS5 长连接最多维持 15m）
+2. 修改云函数超时时间为 900s（因此一个 SOCKS5 长连接最多维持 15m）
 
 ## 客户端配置
 执行 socks5.py（仅支持 Python >= 3.8)
