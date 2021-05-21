@@ -1,10 +1,9 @@
-import pickle
-from random import choice
+import json
 from typing import Tuple
+from random import choice
 from urllib.parse import urlparse
 from base64 import b64encode, b64decode
 
-import json
 import mitmproxy
 from mitmproxy.net.http import Headers
 
