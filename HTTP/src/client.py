@@ -1,6 +1,6 @@
 import json
 import pickle
-from typing import Tuple
+from typing import List
 from random import choice
 from urllib.parse import urlparse
 from base64 import b64encode, b64decode
@@ -9,7 +9,7 @@ import mitmproxy
 from mitmproxy.net.http import Headers
 
 
-scf_servers: Tuple[str] = ()
+scf_servers: List[str] = []
 SCF_TOKEN = "Token"
 
 
