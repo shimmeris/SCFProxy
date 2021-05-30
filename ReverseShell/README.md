@@ -9,7 +9,7 @@
 create database SCF;
 use SCF;
 create table Connections (
-    connectionID varchar(128) NOT NULL,
+    ConnectionID varchar(128) NOT NULL,
     Date datetime,
     is_user tinyint
 )
