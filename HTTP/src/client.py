@@ -52,7 +52,7 @@ def response(flow: mitmproxy.http.HTTPFlow):
 
     if flow.response.status_code == 433:
         flow.response.headers = Headers(content_type="text/html;charset=utf-8")
-        flow.response.content = "<html><body>操作已超过云函数服务最大时间限制，可在函数配置中修改执行超时时间</body></html>"
+        flow.response.text = "<html><body>操作已超过云函数服务最大时间限制，可在函数配置中修改执行超时时间</body></html>"
         return
 
     if flow.response.status_code == 200:
