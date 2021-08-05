@@ -38,8 +38,13 @@ pip3 install -r requirements.txt
 mitmdump -s client.py -p 8081 --no-http2
 ```
 
+如在 VPS 上运行需将 `block_global` 参数设为 false
+```bash
+mitmdump -s client.py -p 8081 --no-http2 --set block_global=false
+```
+
 ## 效果
-挂上代理获取当前 ip 为 129.211.81.195:
+挂上代理获取当前 ip:
 ![ip](img/ip.png)
 查询 ipinfo 为腾讯的服务器:
 ![tencent](img/tencent.png)
