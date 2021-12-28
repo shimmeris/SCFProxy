@@ -6,7 +6,13 @@ from urllib.parse import urlparse
 from base64 import b64encode, b64decode
 
 import mitmproxy
-from mitmproxy.net.http import Headers
+from mitmproxy.version import VERSION
+
+
+if int(VERSION[0]) > 6:
+    from mitmproxy.http import Headers
+else:
+    from mitmproxy.net.http import Headers
 
 
 scf_servers: List[str] = []
