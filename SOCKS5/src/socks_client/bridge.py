@@ -29,7 +29,7 @@ async def socks5_forward(client: Conn, target: Conn):
                 print_time(f"Direction: {src.role} => {dst.role}")
                 print(e)
             except ConnectionResetError:
-                print_time(f"{src.add} sends a ConnectionReset")
+                print_time(f"{src.target} sends a ConnectionReset")
                 pass
 
             await asyncio.sleep(0.01)
