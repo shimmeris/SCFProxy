@@ -70,4 +70,7 @@ def response(flow: mitmproxy.http.HTTPFlow):
             headers=dict(resp.headers),
             content=resp.content,
         )
+        if resp.headers.get('Content-Encoding'):
+            r.headers.insert(-1,"Content-Encoding",resp.headers['Content-Encoding'])
+            
         flow.response = r
