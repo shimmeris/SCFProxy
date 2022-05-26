@@ -8,12 +8,10 @@ from base64 import b64encode, b64decode
 import mitmproxy
 from mitmproxy.version import VERSION
 
-
 if int(VERSION[0]) > 6:
     from mitmproxy.http import Headers
 else:
     from mitmproxy.net.http import Headers
-
 
 scf_servers: List[str] = []
 SCF_TOKEN = "Token"
@@ -56,6 +54,12 @@ def response(flow: mitmproxy.http.HTTPFlow):
         flow.response.headers = Headers(content_type="text/html;charset=utf-8")
         return
 
+    if flow.response.status_code == 430:
+        body = flow.response.content.decode("utf-8")
+        flow.response.headers = Headers(content_type="text/html;charset=utf-8")
+        flow.response.text = "<html><body>云函数执行报错: %s</body></html>" % body
+        return
+
     if flow.response.status_code == 433:
         flow.response.headers = Headers(content_type="text/html;charset=utf-8")
         flow.response.text = "<html><body>操作已超过云函数服务最大时间限制，可在函数配置中修改执行超时时间</body></html>"
@@ -71,6 +75,6 @@ def response(flow: mitmproxy.http.HTTPFlow):
             content=resp.content,
         )
         if resp.headers.get('Content-Encoding'):
-            r.headers.insert(-1,"Content-Encoding",resp.headers['Content-Encoding'])
-            
+            r.headers.insert(-1, "Content-Encoding", resp.headers['Content-Encoding'])
+
         flow.response = r
