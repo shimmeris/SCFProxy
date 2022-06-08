@@ -7,7 +7,15 @@ source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-## 项目配置
+## 一键部署
+访问 [API 密钥管理](https://console.cloud.tencent.com/cam/capi) 获取 `SecretId` 与 `SecretKey`，填入 `setup.py` 中
+
+运行如下代码查看具体部署方式
+```bash
+python3 setup.py --help
+```
+
+## 手动项目配置
 ### 函数配置
 1. 开通[腾讯云函数服务](https://console.cloud.tencent.com/scf/list)
 2. 在 函数服务 > 新建 中使用自定义创建，函数名称及地域任选，运行环境选择 Python3.6。
