@@ -83,7 +83,8 @@ def response(flow: mitmproxy.http.HTTPFlow):
             status_code=resp["status_code"],
             headers=dict(headers),
         )
-        if headers.get("Content-Encoding", None):
+
+        if headers.get("content-encoding", None):
             r.raw_content = raw_content
             if "transfer-encoding" not in r.headers:
                 r.headers['content-length'] = str(len(r.raw_content))

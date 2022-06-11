@@ -12,9 +12,9 @@ def main_handler(event: dict, context: dict):
     http = urllib3.PoolManager()
     # Prohibit automatic redirect to avoid network errors such as connection reset
     r = http.request(**kwargs, retries=False, decode_content=False)
-
+    
     response = {
-        "headers": dict(r.headers),
+        "headers": {k.lower(): v.lower() for k, v in r.headers.items()},
         "status_code": r.status,
         "content": b64encode(r._body).decode('utf-8')
     }
