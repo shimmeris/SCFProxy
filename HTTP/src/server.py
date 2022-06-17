@@ -1,49 +1,27 @@
 # -*- coding: utf8 -*-
 import json
-import pickle
+import urllib3
 from base64 import b64decode, b64encode
-
-import requests
-
-
-SCF_TOKEN = "Token"
-
-
-def authorization():
-    return {
-        "isBase64Encoded": False,
-        "statusCode": 401,
-        "headers": {},
-        "body": "Please provide correct SCF-Token",
-    }
 
 
 def main_handler(event: dict, context: dict):
-    # Tencent cloud has its own authorization system https://console.cloud.tencent.com/cam/capi
-    # But it may be a little overqualified for a simple usage like this
-    try:
-        token = event["headers"]["scf-token"]
-    except KeyError:
-        return authorization()
-
-    if token != SCF_TOKEN:
-        return authorization()
-
     data = event["body"]
     kwargs = json.loads(data)
-    kwargs['data'] = b64decode(kwargs['data'])
+    kwargs['body'] = b64decode(kwargs['body'])
+
+    http = urllib3.PoolManager()
     # Prohibit automatic redirect to avoid network errors such as connection reset
-    r = requests.request(**kwargs, verify=False, allow_redirects=False)
-
-
-    # TODO: REFACTOR NEEDED. Return response headers and body directly.
-    # There are many errors occured when setting headers to r.headers with some aujustments(https://cloud.tencent.com/document/product/583/12513).
-    # and the response `r.content`/`r.raw.read()` to body.(like gzip error)
-    serialized_resp = pickle.dumps(r)
+    r = http.request(**kwargs, retries=False, decode_content=False)
+    
+    response = {
+        "headers": {k.lower(): v.lower() for k, v in r.headers.items()},
+        "status_code": r.status,
+        "content": b64encode(r._body).decode('utf-8')
+    }
 
     return {
         "isBase64Encoded": False,
         "statusCode": 200,
         "headers": {},
-        "body": b64encode(serialized_resp).decode("utf-8"),
+        "body": json.dumps(response)
     }
