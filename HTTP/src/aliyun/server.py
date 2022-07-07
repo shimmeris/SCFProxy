@@ -1,7 +1,8 @@
 # -*- coding: utf8 -*-
 import json
-import urllib3
 from base64 import b64decode, b64encode
+
+import urllib3
 
 
 def handler(environ: dict, start_response):
