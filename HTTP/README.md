@@ -16,6 +16,7 @@ python3 setup.py --help
 ```
 
 ## 手动项目配置
+
 ### 函数配置
 1. 开通[腾讯云函数服务](https://console.cloud.tencent.com/scf/list)
 2. 在 函数服务 > 新建 中使用自定义创建，函数名称及地域任选，运行环境选择 Python3.6。
