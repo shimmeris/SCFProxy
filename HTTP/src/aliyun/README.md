@@ -7,5 +7,5 @@
 运行如下代码查看具体部署方式
 
 ```bash
-python3 setup_aliyunfc.py --help
+python3 setup.py --help
 ```
