@@ -1,8 +1,10 @@
 # SCFProxy
-一个利用[腾讯云函数服务](https://console.cloud.tencent.com/scf/list)实现各种功能的工具。
+一个利用云函数实现各种功能的工具。
 
 # 功能
-* HTTP 代理（已增加一键部署功能）
+* HTTP 代理
+  * 腾讯云
+  * 阿里云 （感谢 [@lyc8503](https://github.com/lyc8503) 提供）
 * SOCKS5 代理
 * 接收反弹 shell
 * C2 域名隐藏
