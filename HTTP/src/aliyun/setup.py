@@ -71,7 +71,7 @@ def create_service(client):
 # 获取 base64 编码的代码包
 def get_zip():
     with zipfile.ZipFile("code.zip", "w", zipfile.ZIP_DEFLATED) as f:
-        f.write("server_aliyunfc.py")
+        f.write("server.py")
 
     with open("code.zip", "rb") as f:
         data = f.read()
@@ -92,7 +92,7 @@ def create_function(zip_code, client):
     create_function_request.function_name = FUNCTION_NAME
     create_function_request.code = Code(zip_file=zip_code)
     create_function_request.runtime = "python3.9"
-    create_function_request.handler = "server_aliyunfc.handler"
+    create_function_request.handler = "server.handler"
     return client.create_function_with_options(SERVICE_NAME, create_function_request, create_function_headers, runtime)
 
 
