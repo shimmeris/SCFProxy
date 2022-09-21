@@ -15,7 +15,7 @@ def handler(environ: dict, start_response):
     kwargs = json.loads(request_body.decode("utf-8"))
     kwargs['body'] = b64decode(kwargs['body'])
 
-    http = urllib3.PoolManager()
+    http = urllib3.PoolManager(cert_reqs="CERT_NONE", assert_hostname=False)
     # Prohibit automatic redirect to avoid network errors such as connection reset
     r = http.request(**kwargs, retries=False, decode_content=False)
 
