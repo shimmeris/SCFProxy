@@ -1,0 +1,27 @@
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: scfproxy
+    binary: scfproxy
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+      - freebsd
+      - openbsd
+    goarch:
+      - 386
+      - amd64
+      - arm64
+
+archives:
+- format: zip
+  replacements:
+      darwin: macOS
+
+checksum:
+  algorithm: sha256
