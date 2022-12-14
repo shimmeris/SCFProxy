@@ -1,8 +1,8 @@
 # SCFProxy
-scfproxy 是一个基于云服务商提供的云函数及 API 网关功能实现多种代理的工具。
+SCFProxy 是一个基于云服务商提供的云函数及 API 网关功能实现多种代理的工具。
 
 # 安装
-前往 [release](https://github.com/shimmeris/SCFProxy/releases/) 页面下载对应系统压缩包即可。如仍需使用 Python 旧版，请切换至 [Python](https://github.com/shimmeris/SCFProxy/tree/Python) 分支
+前往 [Release](https://github.com/shimmeris/SCFProxy/releases/) 页面下载对应系统压缩包即可。如仍需使用 Python 旧版，请切换至 [Python](https://github.com/shimmeris/SCFProxy/tree/Python) 分支
 
 # 使用指南
 ## 配置凭证
