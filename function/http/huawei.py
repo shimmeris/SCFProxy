@@ -13,7 +13,6 @@ def handler(event: dict, context: dict):
     print(kwargs)
 
     http = urllib3.PoolManager(cert_reqs="CERT_NONE", assert_hostname=False)
-
     r = http.request(**kwargs, retries=False, decode_content=False)
 
     response = {
