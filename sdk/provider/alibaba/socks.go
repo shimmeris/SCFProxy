@@ -6,7 +6,6 @@ import (
 	fcopen "github.com/alibabacloud-go/fc-open-20210406/client"
 	"github.com/alibabacloud-go/tea/tea"
 
-	"github.com/shimmeris/SCFProxy/fileutil"
 	"github.com/shimmeris/SCFProxy/function"
 	"github.com/shimmeris/SCFProxy/sdk"
 )
@@ -41,7 +40,7 @@ func (p *Provider) createSocksFunction(serviceName, functionName string) error {
 		Timeout:      tea.Int32(900),
 		MemorySize:   tea.Int32(128),
 		Code: &fcopen.Code{
-			ZipFile: tea.String(fileutil.CreateZipBase64("main", function.AlibabaSocksCode)),
+			ZipFile: tea.String(function.AlibabaSocksCodeZip),
 		},
 	}
 

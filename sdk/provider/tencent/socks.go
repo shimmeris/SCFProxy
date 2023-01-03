@@ -7,7 +7,6 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	scf "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/scf/v20180416"
 
-	"github.com/shimmeris/SCFProxy/fileutil"
 	"github.com/shimmeris/SCFProxy/function"
 	"github.com/shimmeris/SCFProxy/sdk"
 )
@@ -45,7 +44,7 @@ func (p *Provider) createSocksFunction(functionName string) error {
 	r.FunctionName = common.StringPtr(functionName)
 	r.Handler = common.StringPtr("main")
 	r.Runtime = common.StringPtr("Go1")
-	r.Code = &scf.Code{ZipFile: common.StringPtr(fileutil.CreateZipBase64("main", function.TencentSocksCode))}
+	r.Code = &scf.Code{ZipFile: common.StringPtr(function.TencentSocksCodeZip)}
 	r.Timeout = common.Int64Ptr(900)
 	r.MemorySize = common.Int64Ptr(128)
 

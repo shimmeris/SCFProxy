@@ -5,7 +5,6 @@ import (
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/sirupsen/logrus"
 
-	"github.com/shimmeris/SCFProxy/fileutil"
 	"github.com/shimmeris/SCFProxy/function"
 	"github.com/shimmeris/SCFProxy/sdk"
 )
@@ -57,7 +56,7 @@ func (p *Provider) createHttpFunction(serviceName, functionName string) error {
 		Timeout:      tea.Int32(30),
 		MemorySize:   tea.Int32(128),
 		Code: &fcopen.Code{
-			ZipFile: tea.String(fileutil.CreateZipBase64("index.py", function.AlibabaHttpCode)),
+			ZipFile: tea.String(function.AlibabaHttpCodeZip),
 		},
 	}
 

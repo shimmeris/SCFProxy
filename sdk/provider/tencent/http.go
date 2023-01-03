@@ -8,7 +8,6 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	scf "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/scf/v20180416"
 
-	"github.com/shimmeris/SCFProxy/fileutil"
 	"github.com/shimmeris/SCFProxy/function"
 	"github.com/shimmeris/SCFProxy/sdk"
 )
@@ -58,7 +57,7 @@ func (p *Provider) ClearHttpProxy(opts *sdk.HttpProxyOpts) error {
 func (p *Provider) createHttpFunction(functionName string) error {
 	r := scf.NewCreateFunctionRequest()
 	r.FunctionName = common.StringPtr(functionName)
-	r.Code = &scf.Code{ZipFile: common.StringPtr(fileutil.CreateZipBase64("index.py", function.TencentHttpCode))}
+	r.Code = &scf.Code{ZipFile: common.StringPtr(function.TencentHttpCodeZip)}
 	r.Handler = common.StringPtr("index.handler")
 	r.MemorySize = common.Int64Ptr(128)
 	r.Timeout = common.Int64Ptr(30)

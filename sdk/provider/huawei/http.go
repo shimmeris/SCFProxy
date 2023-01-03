@@ -8,7 +8,6 @@ import (
 
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/functiongraph/v2/model"
 
-	"github.com/shimmeris/SCFProxy/fileutil"
 	"github.com/shimmeris/SCFProxy/function"
 	"github.com/shimmeris/SCFProxy/sdk"
 )
@@ -61,7 +60,6 @@ func (p *Provider) createGroup(groupName string) error {
 
 func (p *Provider) createFunction(functionName string) (string, error) {
 	r := &model.CreateFunctionRequest{}
-	code := fileutil.CreateZipBase64("index.py", function.HuaweiHttpCode)
 	r.Body = &model.CreateFunctionRequestBody{
 		Package:    "default",
 		FuncName:   functionName,
@@ -71,7 +69,7 @@ func (p *Provider) createFunction(functionName string) (string, error) {
 		CodeType:   model.GetCreateFunctionRequestBodyCodeTypeEnum().ZIP,
 		Runtime:    model.GetCreateFunctionRequestBodyRuntimeEnum().PYTHON3_9,
 		FuncCode: &model.FuncCode{
-			File: &code,
+			File: &function.HuaweiHttpCodeZip,
 		},
 	}
 
