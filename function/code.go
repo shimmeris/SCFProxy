@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"encoding/base64"
 
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,14 +32,13 @@ var (
 
 	//go:embed socks/tencent
 	tencentSocksCode []byte
-	TencentSocksCodeZip = CreateZipBase64([]File{{Name: "index.py", Content: tencentSocksCode, HighPriv: true}})
+	TencentSocksCodeZip = CreateZipBase64([]File{{Name: "main", Content: tencentSocksCode, HighPriv: true}})
 
 	//go:embed socks/alibaba
 	alibabaSocksCode []byte
-	AlibabaSocksCodeZip = CreateZipBase64([]File{{Name: "index.py", Content: alibabaSocksCode, HighPriv: true}})
+	AlibabaSocksCodeZip = CreateZipBase64([]File{{Name: "main", Content: alibabaSocksCode, HighPriv: true}})
+
 )
-
-
 
 func CreateZipBase64(files []File) string {
 	buf := new(bytes.Buffer)
