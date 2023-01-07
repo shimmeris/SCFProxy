@@ -23,8 +23,11 @@ SCFProxy 是一个基于云服务商提供的云函数及 API 网关功能实现
 ## HTTP 代理
 ### 部署
 ```console
-scfproxy deploy http -p provider_list -r region_list
+scfproxy deploy http -p provider_list -r region_list [-c providerConfigPath]
 ```
+
+`providerConfigPath` 为保存有各个云厂商 ak/sk 的配置文件，默认位置在 `~/.config/scfproxy`
+
 `provider_list` 与 `region_list` 传入的参数列表以 `,` 分隔。
 
 `region_list` 支持如下 4 种形式（在所有 `deploy` 及 `clear` 命令上都支持）
@@ -59,33 +62,39 @@ scfproxy clear http -p provider_list -r region_list [--completely]
 清理功能默认只会删除触发器，如需同时删除函数，需添加 `-e/--completely` 参数
 
 ## SOCKS5 代理
-### 部署
+### 部署 & 清理
+与 HTTP 代理相同，只需替换 `http` 参数为 `socks`
 ```console
-scfproxy deploy socks -p provider_list -r region_list -a address [-k key] --auth [user:pass]
+scfproxy deploy socks -p provider_list -r region_list
 ```
-`-a address` 用于指定云函数回连的 vps 地址
 
-`-k key` 用于连接后进行验证
-
-`--auth [user:pass]` 用于指定 socks 认证信息，默认无认证
 
 ### 运行
 ```console
-scfproxy socks -l socks_port -s scf_port -k key
+scfproxy socks -l socks_port -s scf_port -h address [--auth user:pass] [-c providerConfigPath]
 ```
 `-l socks_port` 监听 socks_port，等待用户的 socks5 连接
 
 `-s scf_port` 监听 scf_port，等待来自云函数的连接，需要部署命令中 `address` 参数的端口一致
 
-`-k key` 用于验证，需与部署命令中的 `key` 对应
+`-h address` 用于指定云函数回连的 vps 地址
 
+`--auth [user:pass]` 用于指定 socks 认证信息，默认无认证
 
-### 清理
-```console
-scfproxy clear socks -p provider_list -r region_list [--completely]
-```
+socks 命令需要读取 ak/sk 用于触发函数，且通过读取 deploy 后生成的 `~/.config/scfproxy/socks.json` 文件确定需要调用函数的厂商及地区，因此需要将上述两个文件复制到 vps 对应位置运行。 
 
-因为 `socks` 代理创建的为 1m 的定时触发器，且函数超时时间较长为避免不必要的浪费，建议在监听到来自云函数的连接后清理触发器，在使用完毕后使用 `-e` 参数彻底清理函数。
+目前 socks 代理部署的函数超时时间为 15m，因此如果将 socks 代理用于一个长连接如 mysql 连接，需自行安排好时间，避免时间一到导致连接意外断开。
+
+### 使用效果
+**长连接**
+
+借助 proxifier 通过 scfproxy 的 socks5 代理进行 mysql 连接，可以看到连接中的 ip 地址来自于阿里云的机器
+![mysql](img/mysql.jpg)
+
+**短连接**
+与 http 类似，每次短连接将获得一个新的 ip
+![short](img/short.jpg)
+
 
 ## 反向代理
 ### 部署
@@ -172,7 +181,7 @@ scfproxy clear http -p provider_list -r region_list -o origin
 ![wechat.png](img/wechat.png)
 
 # TODO
+- [x] 优化 socks 功能
 - [ ] 优化代码
 - [ ] 美化输出
-- [ ] 优化 socks 功能
 - [ ] 增加华为云，AWS，GCP 等其他云厂商

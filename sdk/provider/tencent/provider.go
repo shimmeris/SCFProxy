@@ -3,7 +3,6 @@ package tencent
 import (
 	apigateway "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/apigateway/v20180808"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
-	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	scf "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/scf/v20180416"
 )
@@ -47,42 +46,6 @@ func (p *Provider) Region() string {
 	return p.region
 }
 
-func (p *Provider) clearFunctionProxy(functionName, triggerName, triggerType string, onlyTrigger bool) error {
-	if err := p.deleteTrigger(functionName, triggerName, triggerType); err != nil {
-		if err, ok := err.(*errors.TencentCloudSDKError); !ok || (err.Code != scf.RESOURCENOTFOUND && err.Code != scf.RESOURCENOTFOUND_FUNCTION) {
-			return err
-		}
-	}
-
-	if onlyTrigger {
-		return nil
-	}
-
-	if err := p.deleteFunction(functionName); err != nil {
-		if err, ok := err.(*errors.TencentCloudSDKError); !ok || err.Code != scf.RESOURCENOTFOUND_FUNCTION {
-			return err
-		}
-	}
-	return nil
-}
-
-func (p *Provider) deleteFunction(functionName string) error {
-	r := scf.NewDeleteFunctionRequest()
-	r.FunctionName = common.StringPtr(functionName)
-
-	_, err := p.fclient.DeleteFunction(r)
-	return err
-}
-
-func (p *Provider) deleteTrigger(functionName, triggerName, triggerType string) error {
-	r := scf.NewDeleteTriggerRequest()
-	r.FunctionName = common.StringPtr(functionName)
-	r.TriggerName = common.StringPtr(triggerName)
-	r.Type = common.StringPtr(triggerType) // timer
-
-	_, err := p.fclient.DeleteTrigger(r)
-	return err
-}
 
 func Regions() []string {
 	// 腾讯云大陆外地区部署延迟巨大，暂不进行部署

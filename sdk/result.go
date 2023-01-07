@@ -1,11 +1,5 @@
 package sdk
 
-type DeployHttpProxyResult struct {
-	API      string
-	Region   string
-	Provider string
-}
-
 type DeployReverseProxyResult struct {
 	ServiceId     string
 	ApiId         string

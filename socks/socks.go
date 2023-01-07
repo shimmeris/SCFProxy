@@ -15,7 +15,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const KeyLength = 8
+const KeyLength = 16
 
 var sessions []*yamux.Session
 
@@ -34,7 +34,7 @@ func listenScf(port, key string) {
 		buf := make([]byte, KeyLength)
 		conn.Read(buf)
 		if string(buf) == key {
-			fmt.Printf("New connection from %s\n", conn.RemoteAddr().String())
+			fmt.Printf("New scf connection from %s\n", conn.RemoteAddr().String())
 			session, err := yamux.Client(conn, nil)
 			if err != nil {
 				logrus.Error(err)
@@ -55,6 +55,7 @@ func listenClient(port string) {
 		if err != nil {
 			logrus.Error("listen client failed")
 		}
+		fmt.Printf("New socks connection from %s\n", conn.RemoteAddr().String())
 		go forward(conn)
 	}
 }
@@ -109,7 +110,9 @@ func Serve(socksPort, scfPort, key string) {
 		}()
 	}()
 
+	fmt.Printf("scf listening on 0.0.0.0 %s\n", scfPort)
 	go listenScf(scfPort, key)
+	fmt.Printf("socks listening on 0.0.0.0 %s\n", socksPort)
 	listenClient(socksPort)
 
 }

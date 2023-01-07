@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"strconv"
 	"strings"
@@ -16,7 +14,6 @@ import (
 
 	"github.com/shimmeris/SCFProxy/cmd/config"
 	"github.com/shimmeris/SCFProxy/sdk"
-	"github.com/shimmeris/SCFProxy/socks"
 )
 
 var deployCmd = &cobra.Command{
@@ -35,24 +32,7 @@ var deployCmd = &cobra.Command{
 		case "http":
 			return deployHttp(providers)
 		case "socks":
-			addr, _ := cmd.Flags().GetString("addr")
-			if addr == "" {
-				return errors.New("missing parameter [-a/--addr]")
-			}
-
-			key, _ := cmd.Flags().GetString("key")
-			if key == "" {
-				return errors.New("missing parameter [-k/--key]")
-			}
-			if len(key) != socks.KeyLength {
-				return errors.New(fmt.Sprintf("key must be %d bytes", socks.KeyLength))
-			}
-			if key == "random" {
-				key = randomString(socks.KeyLength)
-			}
-
-			auth, _ := cmd.Flags().GetString("auth")
-			return deploySocks(providers, addr, key, auth)
+			return deploySocks(providers)
 		case "reverse":
 			origin, _ := cmd.Flags().GetString("origin")
 			if origin == "" {
@@ -72,9 +52,7 @@ func init() {
 	deployCmd.Flags().StringP("config", "c", config.ProviderConfigPath, "path of provider credential file")
 
 	// deploy socks needed
-	deployCmd.Flags().StringP("addr", "a", "", "[socks] host:port address of the cloud function callback")
-	deployCmd.Flags().StringP("key", "k", "random", "[socks] 8-bytes string used to verify that the connection initiated to [-a host:port] is from the cloud function")
-	deployCmd.Flags().String("auth", "", "[socks] username:password for socks proxy authentication")
+
 
 	// deploy reverse needed
 	deployCmd.Flags().StringP("origin", "o", "", "[reverse] Address of the reverse proxy back to the source")
@@ -193,9 +171,8 @@ func removeDuplicate(data []string) []string {
 	return result
 }
 
-// TODO: Find a better way to avoid the duplication in `deployXxx` and `clearXxx` function
 func deployHttp(providers []sdk.Provider) error {
-	hconf, err := config.LoadHttpConfig()
+	conf, err := config.LoadHttpConfig()
 	if err != nil {
 		return err
 	}
@@ -214,7 +191,7 @@ func deployHttp(providers []sdk.Provider) error {
 			}
 
 			onlyTrigger := false
-			if record, ok := hconf.Get(provider, region); ok {
+			if record, ok := conf.Get(provider, region); ok {
 				if record.Api != "" {
 					logrus.Infof("%s %s has been deployed, pass", provider, region)
 					return
@@ -222,29 +199,29 @@ func deployHttp(providers []sdk.Provider) error {
 				onlyTrigger = true
 			}
 
-			opts := &sdk.HttpProxyOpts{
+			opts := &sdk.FunctionOpts{
+				Namespace: Namespace,
 				FunctionName: HTTPFunctionName,
 				TriggerName:  HTTPTriggerName,
 				OnlyTrigger:  onlyTrigger,
 			}
-			r, err := hp.DeployHttpProxy(opts)
+			api, err := hp.DeployHttpProxy(opts)
 			if err != nil {
 				logrus.Error(err)
 				return
 			}
 
 			logrus.Printf("[success] http proxy deployed in %s.%s", provider, region)
-			hconf.Set(r.Provider, r.Region, &config.HttpRecord{Api: r.API})
+			conf.Set(provider, region, &config.HttpRecord{Api: api})
 		}(p)
 	}
 
 	wg.Wait()
-	return hconf.Save()
-
+	return conf.Save()
 }
 
-func deploySocks(providers []sdk.Provider, addr, key, auth string) error {
-	sconf, err := config.LoadSocksConfig()
+func deploySocks(providers []sdk.Provider) error {
+	conf, err := config.LoadSocksConfig()
 	if err != nil {
 		return err
 	}
@@ -262,22 +239,14 @@ func deploySocks(providers []sdk.Provider, addr, key, auth string) error {
 				return
 			}
 
-			onlyTrigger := false
-			if record, ok := sconf.Get(provider, region); ok {
-				if record.Key != "" {
-					logrus.Infof("%s %s has already been deployed", provider, region)
-					return
-				}
-				onlyTrigger = true
+			if ok := conf.Has(provider, region); ok {
+				logrus.Infof("%s %s has already been deployed", provider, region)
+				return
 			}
 
-			opts := &sdk.SocksProxyOpts{
+			opts := &sdk.FunctionOpts{
+				Namespace: Namespace,
 				FunctionName: SocksFunctionName,
-				TriggerName:  SocksTriggerName,
-				OnlyTrigger:  onlyTrigger,
-				Key:          key,
-				Addr:         addr,
-				Auth:         auth,
 			}
 			if err := sp.DeploySocksProxy(opts); err != nil {
 				logrus.Error(err)
@@ -285,17 +254,16 @@ func deploySocks(providers []sdk.Provider, addr, key, auth string) error {
 			}
 
 			logrus.Printf("[success] socks proxy deployed in %s.%s", provider, region)
-			tcpAddr, _ := net.ResolveTCPAddr("tcp", addr)
-			sconf.Set(sp.Name(), sp.Region(), &config.SocksRecord{Key: key, Host: tcpAddr.IP.String(), Port: tcpAddr.Port})
+			conf.Set(sp.Name(), sp.Region())
 		}(p)
 	}
 
 	wg.Wait()
-	return sconf.Save()
+	return conf.Save()
 }
 
 func deployReverse(providers []sdk.Provider, origin string, ips []string) error {
-	rconf, err := config.LoadReverseConfig()
+	conf, err := config.LoadReverseConfig()
 	if err != nil {
 		return err
 	}
@@ -338,20 +306,12 @@ func deployReverse(providers []sdk.Provider, origin string, ips []string) error 
 				PluginId:  r.PluginId,
 				Ips:       ips,
 			}
-			rconf.Add(record)
+			conf.Add(record)
 			logrus.Infof("[success] %s.%s: %s - %s : accessible from %v", rp.Name(), rp.Region(), r.Origin, api, whitelistIp)
 		}(p)
 	}
 
 	wg.Wait()
-	return rconf.Save()
+	return conf.Save()
 }
 
-func randomString(n int) string {
-	b := make([]byte, n)
-	if _, err := rand.Read(b); err != nil {
-		panic(err)
-	}
-	s := fmt.Sprintf("%X", b)
-	return s
-}

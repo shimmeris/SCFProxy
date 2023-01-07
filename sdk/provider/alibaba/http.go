@@ -3,48 +3,49 @@ package alibaba
 import (
 	fcopen "github.com/alibabacloud-go/fc-open-20210406/client"
 	"github.com/alibabacloud-go/tea/tea"
-	"github.com/sirupsen/logrus"
 
 	"github.com/shimmeris/SCFProxy/function"
 	"github.com/shimmeris/SCFProxy/sdk"
 )
 
-const ServiceName = "scf"
-
-func (p *Provider) DeployHttpProxy(opts *sdk.HttpProxyOpts) (*sdk.DeployHttpProxyResult, error) {
-	if err := p.createService(ServiceName); err != nil {
-		if err, ok := err.(*tea.SDKError); ok && *err.StatusCode == 409 {
-			logrus.Info("Service name already exists, will use existing")
-		} else {
-			return nil, err
-		}
+func (p *Provider) DeployHttpProxy(opts *sdk.FunctionOpts) (string, error) {
+	if err := p.createService(opts.Namespace); err != nil {
+		return "", err
 	}
 
-	if err := p.createHttpFunction(ServiceName, opts.FunctionName); err != nil {
-		if err, ok := err.(*tea.SDKError); ok && *err.StatusCode == 409 {
-			logrus.Info("function already exists, will use existing")
-		} else {
-			return nil, err
-		}
+	if err := p.createHttpFunction(opts.Namespace, opts.FunctionName); err != nil {
+		return "", err
 	}
 
-	api, err := p.createHttpTrigger(ServiceName, opts.FunctionName, opts.TriggerName)
+	api, err := p.createHttpTrigger(opts.Namespace, opts.FunctionName, opts.TriggerName)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	//TODO: 创建触发器出错时，函数应该删除
-	return &sdk.DeployHttpProxyResult{Provider: p.Name(), Region: p.region, API: api}, err
+	return api, err
 }
 
-func (p *Provider) ClearHttpProxy(opts *sdk.HttpProxyOpts) error {
-	return p.clearProxy(ServiceName, opts.FunctionName, opts.TriggerName, opts.OnlyTrigger)
+func (p *Provider) ClearHttpProxy(opts *sdk.FunctionOpts) error {
+	if err := p.deleteTrigger(opts.Namespace, opts.FunctionName, opts.TriggerName); err != nil {
+		return err
+	}
+
+	if opts.OnlyTrigger {
+		return nil
+	}
+
+	return p.deleteFunction(opts.Namespace, opts.FunctionName)
 }
 
 func (p *Provider) createService(serviceName string) error {
 	h := &fcopen.CreateServiceHeaders{}
 	r := &fcopen.CreateServiceRequest{ServiceName: tea.String(serviceName)}
 	_, err := p.fclient.CreateServiceWithOptions(r, h, p.runtime)
-	return err
+	if err != nil {
+		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 409 {
+			return err
+		}
+	}
+	return nil
 }
 
 func (p *Provider) createHttpFunction(serviceName, functionName string) error {
@@ -61,7 +62,12 @@ func (p *Provider) createHttpFunction(serviceName, functionName string) error {
 	}
 
 	_, err := p.fclient.CreateFunctionWithOptions(tea.String(serviceName), r, h, p.runtime)
-	return err
+	if err != nil {
+		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 409 {
+			return err
+		}
+	}
+	return nil
 }
 
 func (p *Provider) createHttpTrigger(serviceName, functionName, triggerName string) (string, error) {
@@ -77,4 +83,43 @@ func (p *Provider) createHttpTrigger(serviceName, functionName, triggerName stri
 		return "", err
 	}
 	return *res.Body.UrlInternet, nil
+}
+
+func (p *Provider) deleteService(serviceName string) error {
+	h := &fcopen.DeleteServiceHeaders{}
+	_, err := p.fclient.DeleteServiceWithOptions(tea.String(serviceName), h, p.runtime)
+	if err != nil {
+		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 404 {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Provider) deleteFunction(serviceName, functionName string) error {
+	h := &fcopen.DeleteFunctionHeaders{}
+	_, err := p.fclient.DeleteFunctionWithOptions(tea.String(serviceName), tea.String(functionName), h, p.runtime)
+	if err != nil {
+		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 404 {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Provider) deleteTrigger(serviceName, functionName, triggerName string) error {
+	deleteTriggerHeaders := &fcopen.DeleteTriggerHeaders{}
+	_, err := p.fclient.DeleteTriggerWithOptions(
+		tea.String(serviceName),
+		tea.String(functionName),
+		tea.String(triggerName),
+		deleteTriggerHeaders,
+		p.runtime,
+	)
+	if err != nil {
+		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 404 {
+			return err
+		}
+	}
+	return nil
 }

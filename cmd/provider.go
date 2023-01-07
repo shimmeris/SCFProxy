@@ -8,11 +8,12 @@ import (
 )
 
 const (
+	Namespace = "scfproxy"
+
 	HTTPFunctionName = "scf_http"
 	HTTPTriggerName  = "http_trigger"
 
 	SocksFunctionName = "scf_socks"
-	SocksTriggerName  = "socks_trigger"
 )
 
 var (

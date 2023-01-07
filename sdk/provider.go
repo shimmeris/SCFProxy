@@ -7,14 +7,15 @@ type Provider interface {
 
 type HttpProxyProvider interface {
 	Provider
-	DeployHttpProxy(*HttpProxyOpts) (*DeployHttpProxyResult, error)
-	ClearHttpProxy(*HttpProxyOpts) error
+	DeployHttpProxy(*FunctionOpts) (string, error)
+	ClearHttpProxy(*FunctionOpts) error
 }
 
 type SocksProxyProvider interface {
 	Provider
-	DeploySocksProxy(*SocksProxyOpts) error
-	ClearSocksProxy(*SocksProxyOpts) error
+	DeploySocksProxy(*FunctionOpts) error
+	ClearSocksProxy(*FunctionOpts) error
+	InvokeFunction(*FunctionOpts, string) error
 }
 
 type ReverseProxyProvider interface {

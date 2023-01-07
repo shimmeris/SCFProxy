@@ -44,48 +44,6 @@ func (p *Provider) Region() string {
 	return p.region
 }
 
-func (p *Provider) clearProxy(serviceName, functionName, triggerName string, onlyTrigger bool) error {
-	if err := p.deleteTrigger(serviceName, functionName, triggerName); err != nil {
-		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 404 {
-			return err
-		}
-	}
-
-	if onlyTrigger {
-		return nil
-	}
-
-	if err := p.deleteFunction(serviceName, functionName); err != nil {
-		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 404 {
-			return err
-		}
-	}
-	return nil
-}
-
-func (p *Provider) deleteService(serviceName string) error {
-	h := &fcopen.DeleteServiceHeaders{}
-	_, err := p.fclient.DeleteServiceWithOptions(tea.String(serviceName), h, p.runtime)
-	return err
-}
-
-func (p *Provider) deleteFunction(serviceName, functionName string) error {
-	h := &fcopen.DeleteFunctionHeaders{}
-	_, err := p.fclient.DeleteFunctionWithOptions(tea.String(serviceName), tea.String(functionName), h, p.runtime)
-	return err
-}
-
-func (p *Provider) deleteTrigger(serviceName, functionName, triggerName string) error {
-	deleteTriggerHeaders := &fcopen.DeleteTriggerHeaders{}
-	_, err := p.fclient.DeleteTriggerWithOptions(
-		tea.String(serviceName),
-		tea.String(functionName),
-		tea.String(triggerName),
-		deleteTriggerHeaders,
-		p.runtime,
-	)
-	return err
-}
 
 func Regions() []string {
 	return []string{

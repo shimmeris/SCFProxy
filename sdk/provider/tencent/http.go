@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	scf "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/scf/v20180416"
@@ -18,12 +19,14 @@ type ApiExtractor struct {
 	} `json:"service"`
 }
 
-func (p *Provider) DeployHttpProxy(opts *sdk.HttpProxyOpts) (*sdk.DeployHttpProxyResult, error) {
+func (p *Provider) DeployHttpProxy(opts *sdk.FunctionOpts) (string, error) {
+	if err := p.createNamespace(opts.Namespace); err != nil {
+		return "", err
+	}
+
 	if !opts.OnlyTrigger {
-		if err := p.createHttpFunction(opts.FunctionName); err != nil {
-			if err, ok := err.(*errors.TencentCloudSDKError); !ok || err.Code != scf.RESOURCEINUSE_FUNCTION {
-				return nil, err
-			}
+		if err := p.createHttpFunction(opts.Namespace, opts.FunctionName); err != nil {
+			return "", err
 		}
 	}
 
@@ -32,30 +35,49 @@ func (p *Provider) DeployHttpProxy(opts *sdk.HttpProxyOpts) (*sdk.DeployHttpProx
 	// tencent returns async. retry 3 times
 	for i := 0; i < 3; i++ {
 		time.Sleep(10 * time.Second)
-		api, err = p.createHttpTrigger(opts.FunctionName, opts.TriggerName)
+		api, err = p.createHttpTrigger(opts.Namespace, opts.FunctionName, opts.TriggerName)
 		if err == nil {
 			break
 		}
+		logrus.Errorf("Failed creating http proxy function in tencent.%s, retry after 10 sec", p.region)
 	}
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	result := &sdk.DeployHttpProxyResult{
-		Provider: p.Name(),
-		Region:   p.region,
-		API:      api,
-	}
-	return result, nil
+	return api, nil
 
 }
 
-func (p *Provider) ClearHttpProxy(opts *sdk.HttpProxyOpts) error {
-	return p.clearFunctionProxy(opts.FunctionName, opts.TriggerName, "apigw", opts.OnlyTrigger)
+func (p *Provider) ClearHttpProxy(opts *sdk.FunctionOpts) error {
+	if err := p.deleteTrigger(opts.Namespace, opts.FunctionName, opts.TriggerName, "apigw"); err != nil {
+		return err
+	}
+
+	if opts.OnlyTrigger {
+		return nil
+	}
+
+	return p.deleteFunction(opts.Namespace, opts.FunctionName)
+
 }
 
-func (p *Provider) createHttpFunction(functionName string) error {
+func (p *Provider) createNamespace(namespace string) error {
+	r := scf.NewCreateNamespaceRequest()
+	r.Namespace = common.StringPtr(namespace)
+
+	_, err := p.fclient.CreateNamespace(r)
+	if err != nil {
+		if err, ok := err.(*errors.TencentCloudSDKError); !ok || err.Code != scf.RESOURCEINUSE_NAMESPACE {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Provider) createHttpFunction(namespace, functionName string) error {
 	r := scf.NewCreateFunctionRequest()
+	r.Namespace = common.StringPtr(namespace)
 	r.FunctionName = common.StringPtr(functionName)
 	r.Code = &scf.Code{ZipFile: common.StringPtr(function.TencentHttpCodeZip)}
 	r.Handler = common.StringPtr("index.handler")
@@ -64,10 +86,15 @@ func (p *Provider) createHttpFunction(functionName string) error {
 	r.Runtime = common.StringPtr("Python3.6")
 
 	_, err := p.fclient.CreateFunction(r)
-	return err
+	if err != nil {
+		if err, ok := err.(*errors.TencentCloudSDKError); !ok || err.Code != scf.RESOURCEINUSE_FUNCTION {
+			return err
+		}
+	}
+	return nil
 }
 
-func (p *Provider) createHttpTrigger(functionName, triggerName string) (string, error) {
+func (p *Provider) createHttpTrigger(namespace, functionName, triggerName string) (string, error) {
 	r := scf.NewCreateTriggerRequest()
 	r.FunctionName = common.StringPtr(functionName)
 	r.TriggerName = common.StringPtr(triggerName)
@@ -87,6 +114,7 @@ func (p *Provider) createHttpTrigger(functionName, triggerName string) (string, 
 					"environmentName":"release"
 				}
 			}`)
+	r.Namespace = common.StringPtr(namespace)
 
 	response, err := p.fclient.CreateTrigger(r)
 	if err != nil {
@@ -101,4 +129,47 @@ func (p *Provider) createHttpTrigger(functionName, triggerName string) (string, 
 
 	api := extractor.Service.SubDomain
 	return api, nil
+}
+
+func (p *Provider) deleteNamespace(namespace string) error {
+	r := scf.NewDeleteNamespaceRequest()
+	r.Namespace = common.StringPtr(namespace)
+
+	_, err := p.fclient.DeleteNamespace(r)
+	if err != nil {
+		if err, ok := err.(*errors.TencentCloudSDKError); !ok || err.Code != scf.RESOURCENOTFOUND_NAMESPACE {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Provider) deleteFunction(namespace, functionName string) error {
+	r := scf.NewDeleteFunctionRequest()
+	r.Namespace = common.StringPtr(namespace)
+	r.FunctionName = common.StringPtr(functionName)
+
+	_, err := p.fclient.DeleteFunction(r)
+	if err != nil {
+		if err, ok := err.(*errors.TencentCloudSDKError); !ok || (err.Code != scf.RESOURCENOTFOUND_NAMESPACE && err.Code != scf.RESOURCENOTFOUND_FUNCTION) {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Provider) deleteTrigger(namespace, functionName, triggerName, triggerType string) error {
+	r := scf.NewDeleteTriggerRequest()
+	r.Namespace = common.StringPtr(namespace)
+	r.FunctionName = common.StringPtr(functionName)
+	r.TriggerName = common.StringPtr(triggerName)
+	r.Type = common.StringPtr(triggerType)
+
+	_, err := p.fclient.DeleteTrigger(r)
+	if err != nil {
+		if err, ok := err.(*errors.TencentCloudSDKError); !ok || (err.Code != scf.RESOURCENOTFOUND && err.Code != scf.RESOURCENOTFOUND_FUNCTION) {
+			return err
+		}
+	}
+	return nil
 }

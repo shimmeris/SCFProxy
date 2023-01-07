@@ -28,7 +28,7 @@ var clearCmd = &cobra.Command{
 		case "http":
 			return clearHttp(providers, completely)
 		case "socks":
-			return clearSocks(providers, completely)
+			return clearSocks(providers)
 		case "reverse":
 			origin, _ := cmd.Flags().GetString("origin")
 			if origin == "" {
@@ -48,8 +48,8 @@ func init() {
 	clearCmd.Flags().StringSliceP("region", "r", nil, "specify which regions of cloud providers clear proxy")
 	clearCmd.Flags().StringP("config", "c", config.ProviderConfigPath, "path of provider credential file")
 
-	// clear http or socks needed
-	clearCmd.Flags().BoolP("completely", "e", false, "[http|socks] whether to completely clear up deployed proxies (by default only delete triggers)`[http | socks]`")
+	// clear http needed
+	clearCmd.Flags().BoolP("completely", "e", false, "[http] whether to completely clear up deployed proxies (by default only delete triggers)`[http | socks]`")
 
 	// clear reverse needed
 	clearCmd.Flags().StringP("origin", "o", "", "[reverset] Address of the reverse proxy back to the source")
@@ -59,7 +59,7 @@ func init() {
 }
 
 func clearHttp(providers []sdk.Provider, completely bool) error {
-	hconf, err := config.LoadHttpConfig()
+	conf, err := config.LoadHttpConfig()
 	if err != nil {
 		return err
 	}
@@ -73,12 +73,13 @@ func clearHttp(providers []sdk.Provider, completely bool) error {
 			hp := p.(sdk.HttpProxyProvider)
 			provider, region := hp.Name(), hp.Region()
 
-			if record, ok := hconf.Get(provider, region); ok && record.Api == "" && !completely {
+			if record, ok := conf.Get(provider, region); ok && record.Api == "" && !completely {
 				logrus.Infof("%s %s trigger has already been cleared", provider, region)
 				return
 			}
 
-			opts := &sdk.HttpProxyOpts{
+			opts := &sdk.FunctionOpts{
+				Namespace: Namespace,
 				FunctionName: HTTPFunctionName,
 				TriggerName:  HTTPTriggerName,
 				OnlyTrigger:  !completely,
@@ -90,21 +91,21 @@ func clearHttp(providers []sdk.Provider, completely bool) error {
 				return
 			}
 			if completely {
-				hconf.Delete(provider, region)
+				conf.Delete(provider, region)
 				logrus.Printf("[success] cleared http function in %s.%s", provider, region)
 			} else {
-				hconf.Set(provider, region, &config.HttpRecord{})
+				conf.Set(provider, region, &config.HttpRecord{})
 				logrus.Printf("[success] cleared http trigger in %s.%s", provider, region)
 			}
 		}(p)
 	}
 	wg.Wait()
 
-	return hconf.Save()
+	return conf.Save()
 }
 
-func clearSocks(providers []sdk.Provider, completely bool) error {
-	sconf, err := config.LoadSocksConfig()
+func clearSocks(providers []sdk.Provider) error {
+	conf, err := config.LoadSocksConfig()
 	if err != nil {
 		return err
 	}
@@ -118,15 +119,10 @@ func clearSocks(providers []sdk.Provider, completely bool) error {
 			sp := p.(sdk.SocksProxyProvider)
 
 			provider, region := sp.Name(), sp.Region()
-			if record, ok := sconf.Get(provider, region); ok && record.Key == "" && !completely {
-				logrus.Infof("%s %s trigger has already been cleared", provider, region)
-				return
-			}
 
-			opts := &sdk.SocksProxyOpts{
+			opts := &sdk.FunctionOpts{
+				Namespace: Namespace,
 				FunctionName: SocksFunctionName,
-				TriggerName:  SocksTriggerName,
-				OnlyTrigger:  !completely,
 			}
 			err := sp.ClearSocksProxy(opts)
 			if err != nil {
@@ -134,22 +130,17 @@ func clearSocks(providers []sdk.Provider, completely bool) error {
 				return
 			}
 
-			if completely {
-				sconf.Delete(provider, region)
-				logrus.Printf("[success] cleared socks function in %s.%s", provider, region)
-			} else {
-				sconf.Set(provider, region, &config.SocksRecord{})
-				logrus.Printf("[success] cleared socks trigger in %s.%s", provider, region)
-			}
+			conf.Delete(provider, region)
+			logrus.Printf("[success] cleared socks function in %s.%s", provider, region)
 		}(p)
 	}
 
 	wg.Wait()
-	return sconf.Save()
+	return conf.Save()
 }
 
 func clearReverse(providers []sdk.Provider, origin string) error {
-	rconf, err := config.LoadReverseConfig()
+	conf, err := config.LoadReverseConfig()
 	if err != nil {
 		return err
 	}
@@ -158,9 +149,9 @@ func clearReverse(providers []sdk.Provider, origin string) error {
 
 	for _, p := range providers {
 		i := 0
-		for _, record := range rconf.Records {
+		for _, record := range conf.Records {
 			if record.Provider != p.Name() || record.Region != p.Region() || record.Origin != origin {
-				rconf.Records[i] = record
+				conf.Records[i] = record
 				i++
 				continue
 			}
@@ -182,13 +173,11 @@ func clearReverse(providers []sdk.Provider, origin string) error {
 				}
 
 				logrus.Printf("[success] cleard reverse proxy for %s in %s.%s", origin, p.Name(), p.Region())
-
 			}(p, record)
-
 		}
-		rconf.Records = rconf.Records[:i]
+		conf.Records = conf.Records[:i]
 	}
 
 	wg.Wait()
-	return rconf.Save()
+	return conf.Save()
 }

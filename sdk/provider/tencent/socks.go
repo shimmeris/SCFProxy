@@ -1,8 +1,6 @@
 package tencent
 
 import (
-	"time"
-
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	scf "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/scf/v20180416"
@@ -11,36 +9,21 @@ import (
 	"github.com/shimmeris/SCFProxy/sdk"
 )
 
-func (p *Provider) DeploySocksProxy(opts *sdk.SocksProxyOpts) error {
-	if !opts.OnlyTrigger {
-		if err := p.createSocksFunction(opts.FunctionName); err != nil {
-			if err, ok := err.(*errors.TencentCloudSDKError); !ok || err.Code != scf.RESOURCEINUSE_FUNCTION {
-				return err
-			}
-		}
-		time.Sleep(10 * time.Second)
+func (p *Provider) DeploySocksProxy(opts *sdk.FunctionOpts) error {
+	if err := p.createNamespace(opts.Namespace); err != nil {
+		return err
 	}
 
-	message := opts.DumpBase64Message()
-
-	var err error
-	// tencent returns async. retry 3 times
-	for i := 0; i < 3; i++ {
-		time.Sleep(10 * time.Second)
-		err = p.createSocksTrigger(opts.FunctionName, opts.TriggerName, message)
-		if err == nil {
-			break
-		}
-	}
-	return err
+	return p.createSocksFunction(opts.Namespace, opts.FunctionName)
 }
 
-func (p *Provider) ClearSocksProxy(opts *sdk.SocksProxyOpts) error {
-	return p.clearFunctionProxy(opts.FunctionName, opts.TriggerName, "timer", opts.OnlyTrigger)
+func (p *Provider) ClearSocksProxy(opts *sdk.FunctionOpts) error {
+	return p.deleteFunction(opts.Namespace, opts.FunctionName);
 }
 
-func (p *Provider) createSocksFunction(functionName string) error {
+func (p *Provider) createSocksFunction(namespace, functionName string) error {
 	r := scf.NewCreateFunctionRequest()
+	r.Namespace = common.StringPtr(namespace)
 	r.FunctionName = common.StringPtr(functionName)
 	r.Handler = common.StringPtr("main")
 	r.Runtime = common.StringPtr("Go1")
@@ -49,18 +32,22 @@ func (p *Provider) createSocksFunction(functionName string) error {
 	r.MemorySize = common.Int64Ptr(128)
 
 	_, err := p.fclient.CreateFunction(r)
-	return err
-
+	if err != nil {
+		if err, ok := err.(*errors.TencentCloudSDKError); !ok || err.Code != scf.RESOURCEINUSE_FUNCTION {
+			return err
+		}
+	}
+	return nil
 }
 
-func (p *Provider) createSocksTrigger(functionName, triggerName, message string) error {
-	r := scf.NewCreateTriggerRequest()
-	r.FunctionName = common.StringPtr(functionName)
-	r.TriggerName = common.StringPtr(triggerName)
-	r.Type = common.StringPtr("timer")
-	r.TriggerDesc = common.StringPtr("0 */1 * * * * *") // every 1 min
-	r.CustomArgument = common.StringPtr(message)
+func (p *Provider) InvokeFunction(opts *sdk.FunctionOpts, message string) error {
+	r := scf.NewInvokeRequest()
+	r.Namespace = common.StringPtr(opts.Namespace)
+	r.FunctionName = common.StringPtr(opts.FunctionName)
+	r.InvocationType = common.StringPtr("Event")
+	r.ClientContext = common.StringPtr(message)
 
-	_, err := p.fclient.CreateTrigger(r)
+	_, err := p.fclient.Invoke(r)
 	return err
+
 }

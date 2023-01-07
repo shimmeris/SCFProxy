@@ -11,23 +11,23 @@ import (
 	"github.com/hashicorp/yamux"
 )
 
-type Options struct {
+type Event struct {
 	Key  string
 	Addr string
 	Auth string
 }
 
-func Run(opts *Options) {
+func Handle(event Event) error {
 	user, pass := "", ""
 
-	userpass := strings.SplitN(opts.Auth, ":", 2)
+	userpass := strings.SplitN(event.Auth, ":", 2)
 	if len(userpass) == 2 {
 		user, pass = userpass[0], userpass[1]
 	}
 
 	socksServer := createSocks5(user, pass)
 	for {
-		conn := keepConnect(opts.Addr, opts.Key)
+		conn := keepConnect(event.Addr, event.Key)
 		session, err := yamux.Server(conn, nil)
 		if err != nil {
 			continue
@@ -66,8 +66,12 @@ func keepConnect(addr, key string) net.Conn {
 	for i := 0; i < 5; i++ {
 		conn, err := net.Dial("tcp", addr)
 		if err != nil {
-			time.Sleep(5 * time.Second)
-			fmt.Println("Reconnecting")
+			if i == 4 {
+				fmt.Printf("Connect to %s failed", conn.RemoteAddr().String())
+				return nil
+			}
+			time.Sleep(time.Duration((i+1)*5) * time.Second)
+			fmt.Printf("[%d] Reconnecting\n", i)
 			continue
 		}
 		conn.Write([]byte(key))

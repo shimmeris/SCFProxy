@@ -57,7 +57,7 @@ var listCmd = &cobra.Command{
 			table.AppendBulk(data)
 			table.Render()
 		case "socks":
-			table.SetHeader([]string{"Provider", "Region", "Host", "Port", "Key"})
+			table.SetHeader([]string{"Provider", "Region"})
 			conf, err := config.LoadSocksConfig()
 			if err != nil {
 				return err

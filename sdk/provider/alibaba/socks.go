@@ -1,8 +1,6 @@
 package alibaba
 
 import (
-	"fmt"
-
 	fcopen "github.com/alibabacloud-go/fc-open-20210406/client"
 	"github.com/alibabacloud-go/tea/tea"
 
@@ -10,25 +8,15 @@ import (
 	"github.com/shimmeris/SCFProxy/sdk"
 )
 
-func (p *Provider) DeploySocksProxy(opts *sdk.SocksProxyOpts) error {
-	if err := p.createService(ServiceName); err != nil {
-		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 409 {
-			return err
-		}
+func (p *Provider) DeploySocksProxy(opts *sdk.FunctionOpts) error {
+	if err := p.createService(opts.Namespace); err != nil {
+		return err
 	}
-
-	if err := p.createSocksFunction(ServiceName, opts.FunctionName); err != nil {
-		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 409 {
-			return err
-		}
-	}
-	// TODO: 创建触发器出错时，函数应该删除
-	return p.createSocksTrigger(ServiceName, opts.FunctionName, opts.TriggerName, opts.DumpBase64Message())
-
+	return p.createSocksFunction(opts.Namespace, opts.FunctionName)
 }
 
-func (p *Provider) ClearSocksProxy(opts *sdk.SocksProxyOpts) error {
-	return p.clearProxy(ServiceName, opts.FunctionName, opts.TriggerName, opts.OnlyTrigger)
+func (p *Provider) ClearSocksProxy(opts *sdk.FunctionOpts) error {
+	return p.deleteFunction(opts.Namespace, opts.FunctionName)
 }
 
 func (p *Provider) createSocksFunction(serviceName, functionName string) error {
@@ -45,17 +33,19 @@ func (p *Provider) createSocksFunction(serviceName, functionName string) error {
 	}
 
 	_, err := p.fclient.CreateFunctionWithOptions(tea.String(serviceName), r, h, p.runtime)
-	return err
+	if err != nil {
+		if err, ok := err.(*tea.SDKError); !ok || *err.StatusCode != 409 {
+			return err
+		}
+	}
+	return nil
 }
 
-func (p *Provider) createSocksTrigger(serviceName, functionName, triggerName, message string) error {
-	h := &fcopen.CreateTriggerHeaders{}
-	r := &fcopen.CreateTriggerRequest{
-		TriggerType:   tea.String("timer"),
-		TriggerName:   tea.String(triggerName),
-		TriggerConfig: tea.String(fmt.Sprintf("{\"enable\": true,  \"cronExpression\": \"@every 1m\",  \"payload\": \"%s\"}", message)),
-	}
 
-	_, err := p.fclient.CreateTriggerWithOptions(tea.String(serviceName), tea.String(functionName), r, h, p.runtime)
+func (p *Provider) InvokeFunction(opts *sdk.FunctionOpts, message string) error {
+	h := &fcopen.InvokeFunctionHeaders{XFcInvocationType: tea.String("Async")}
+	r := &fcopen.InvokeFunctionRequest{Body: []byte(message)}
+
+	_, err := p.fclient.InvokeFunctionWithOptions(tea.String(opts.Namespace), tea.String(opts.FunctionName), r, h, p.runtime)
 	return err
 }

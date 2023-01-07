@@ -53,6 +53,7 @@ scfproxy is a tool that implements multiple proxies based on cloud functions and
 
 func init() {
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "set debug log level")
+	rootCmd.PersistentFlags().BoolP("help", "", false, "help for this command")
 }
 
 func Execute() {
