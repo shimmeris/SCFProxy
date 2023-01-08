@@ -3,6 +3,7 @@ import json
 from base64 import b64decode, b64encode
 
 import urllib3
+urllib3.disable_warnings()
 
 
 def handler(environ: dict, start_response):
@@ -15,7 +16,7 @@ def handler(environ: dict, start_response):
     kwargs = json.loads(request_body.decode("utf-8"))
     kwargs['body'] = b64decode(kwargs['body'])
 
-    http = urllib3.PoolManager(cert_reqs="CERT_NONE", assert_hostname=False)
+    http = urllib3.PoolManager(cert_reqs="CERT_NONE")
     # Prohibit automatic redirect to avoid network errors such as connection reset
     r = http.request(**kwargs, retries=False, decode_content=False)
 
