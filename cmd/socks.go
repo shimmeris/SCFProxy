@@ -62,10 +62,12 @@ func invoke(providerConfigPath, message string) {
 				p, err := createProvider(provider, region, providerConfig)
 				if err != nil {
 					logrus.Error(err)
+					return
 				}
 				sp, ok := p.(sdk.SocksProxyProvider)
 				if !ok {
 					logrus.Errorf("%s can't deploy reverse proxy", provider)
+					return
 				}
 
 				opts := &sdk.FunctionOpts{
