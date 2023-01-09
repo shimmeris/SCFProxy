@@ -54,7 +54,7 @@ func (p *Provider) createHttpFunction(serviceName, functionName string) error {
 		FunctionName: tea.String(functionName),
 		Runtime:      tea.String("python3.9"),
 		Handler:      tea.String("index.handler"),
-		Timeout:      tea.Int32(30),
+		Timeout:      tea.Int32(10),
 		MemorySize:   tea.Int32(128),
 		Code: &fcopen.Code{
 			ZipFile: tea.String(function.AlibabaHttpCodeZip),

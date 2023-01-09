@@ -48,7 +48,7 @@ func (p *Provider) createHttpFunction(functionName string) error {
 		Handler:       aws.String("index.handler"),
 		MemorySize:    aws.Int32(128),
 		Architectures: []types.Architecture{types.ArchitectureArm64},
-		Timeout:       aws.Int32(30),
+		Timeout:       aws.Int32(10),
 		Runtime:       types.RuntimePython39,
 		PackageType:   types.PackageTypeZip,
 		Role:          p.roleArn,

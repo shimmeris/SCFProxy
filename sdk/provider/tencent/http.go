@@ -82,7 +82,7 @@ func (p *Provider) createHttpFunction(namespace, functionName string) error {
 	r.Code = &scf.Code{ZipFile: common.StringPtr(function.TencentHttpCodeZip)}
 	r.Handler = common.StringPtr("index.handler")
 	r.MemorySize = common.Int64Ptr(128)
-	r.Timeout = common.Int64Ptr(30)
+	r.Timeout = common.Int64Ptr(10)
 	r.Runtime = common.StringPtr("Python3.6")
 
 	_, err := p.fclient.CreateFunction(r)
