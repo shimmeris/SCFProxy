@@ -46,7 +46,6 @@ func (p *Provider) Region() string {
 	return p.region
 }
 
-
 func Regions() []string {
 	// 腾讯云大陆外地区部署延迟巨大，暂不进行部署
 	return []string{

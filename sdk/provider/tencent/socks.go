@@ -18,7 +18,7 @@ func (p *Provider) DeploySocksProxy(opts *sdk.FunctionOpts) error {
 }
 
 func (p *Provider) ClearSocksProxy(opts *sdk.FunctionOpts) error {
-	return p.deleteFunction(opts.Namespace, opts.FunctionName);
+	return p.deleteFunction(opts.Namespace, opts.FunctionName)
 }
 
 func (p *Provider) createSocksFunction(namespace, functionName string) error {

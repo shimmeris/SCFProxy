@@ -41,7 +41,6 @@ func (p *Provider) createSocksFunction(serviceName, functionName string) error {
 	return nil
 }
 
-
 func (p *Provider) InvokeFunction(opts *sdk.FunctionOpts, message string) error {
 	h := &fcopen.InvokeFunctionHeaders{XFcInvocationType: tea.String("Async")}
 	r := &fcopen.InvokeFunctionRequest{Body: []byte(message)}

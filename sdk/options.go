@@ -1,7 +1,7 @@
 package sdk
 
 type FunctionOpts struct {
-	Namespace string
+	Namespace    string
 	FunctionName string
 	TriggerName  string
 	OnlyTrigger  bool

@@ -57,7 +57,7 @@ func invoke(providerConfigPath, message string) {
 	}
 
 	for provider, rmap := range conf.Records {
-		for region, _ := range rmap {
+		for region := range rmap {
 			go func(provider, region string) {
 				p, err := createProvider(provider, region, providerConfig)
 				if err != nil {
@@ -71,7 +71,7 @@ func invoke(providerConfigPath, message string) {
 				}
 
 				opts := &sdk.FunctionOpts{
-					Namespace: Namespace,
+					Namespace:    Namespace,
 					FunctionName: SocksFunctionName,
 				}
 				err = sp.InvokeFunction(opts, message)
@@ -110,6 +110,7 @@ func (m *Message) Json() string {
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
 func randomString(n int) string {
 	b := make([]rune, n)
 	for i := range b {

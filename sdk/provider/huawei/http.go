@@ -14,22 +14,22 @@ import (
 
 const GroupName = "scf"
 
-func (p *Provider) DeployHttpProxy(opts *sdk.HttpProxyOpts) (*sdk.DeployHttpProxyResult, error) {
+func (p *Provider) DeployHttpProxy(opts *sdk.FunctionOpts) (string, error) {
 	if err := p.createGroup(GroupName); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	functionUrn, err := p.createFunction(opts.FunctionName)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	triggerId, err := p.createHttpTrigger(functionUrn, opts.TriggerName)
+	api, err := p.createHttpTrigger(functionUrn, opts.TriggerName)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &sdk.DeployHttpProxyResult{API: triggerId, Region: p.region, Provider: p.Name()}, nil
+	return api, nil
 
 }
 

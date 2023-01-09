@@ -44,7 +44,6 @@ func (p *Provider) Region() string {
 	return p.region
 }
 
-
 func Regions() []string {
 	return []string{
 		"ap-northeast-1",
