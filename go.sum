@@ -44,12 +44,8 @@ github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.27 h1:I3cakv2Uy1vNmmhRQ
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.27/go.mod h1:a1/UpzeyBBerajpnP5nGZa9mGzsBn5cOKxm6NWQsvoI=
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.21 h1:5NbbMrIzmUn/TXFqAle6mgrH5m9cOvMLRGL7pnG8tRE=
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.21/go.mod h1:+Gxn8jYn5k9ebfHEqlhrMirFjSW0v0C9fI+KN5vk2kE=
-github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.18 h1:H/mF2LNWwX00lD6FlYfKpLLZgUW7oIzCBkig78x4Xok=
-github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.18/go.mod h1:T2Ku+STrYQ1zIkL1wMvj8P3wWQaaCMKNdz70MT2FLfE=
 github.com/aws/aws-sdk-go-v2/service/apigateway v1.15.28 h1:tzsVFhPi6VCp8eaY2BoYbaWsthrNIya2VyD28Bj2v7s=
 github.com/aws/aws-sdk-go-v2/service/apigateway v1.15.28/go.mod h1:6UIKOkbI/NjVEszKrlgWDrlEPkpd2X+BBrzj0N/XTM4=
-github.com/aws/aws-sdk-go-v2/service/eventbridge v1.16.22 h1:9mefPSbUp/FdT01NJVvl+afbvUNhTiZ2td3rzOT02Hg=
-github.com/aws/aws-sdk-go-v2/service/eventbridge v1.16.22/go.mod h1:YLJlg6D8anm5tkNO68n5rSXo0N86Chp8HIGbdwL1dzk=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.21/go.mod h1:lRToEJsn+DRA9lW4O9L9+/3hjTkUzlzyzHqn8MTds5k=
 github.com/aws/aws-sdk-go-v2/service/lambda v1.26.2 h1:N7YZeA5IlmhuRhoUtlWwuciRMISaP/YREIvosGthsLs=
 github.com/aws/aws-sdk-go-v2/service/lambda v1.26.2/go.mod h1:swAeO/+tSUbMwB9EF2miaCxPDSQwzRjfnRsYaNwbeRk=

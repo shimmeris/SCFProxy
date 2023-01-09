@@ -10,7 +10,6 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.17.3
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.7
 	github.com/aws/aws-sdk-go-v2/service/apigateway v1.15.28
-	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.16.22
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.26.2
 	github.com/google/martian/v3 v3.3.2
 	github.com/hashicorp/yamux v0.1.1
@@ -36,7 +35,6 @@ require (
 	github.com/aliyun/credentials-go v1.2.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.27 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.21 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.18 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/clbanning/mxj/v2 v2.5.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
