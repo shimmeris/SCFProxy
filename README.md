@@ -205,6 +205,9 @@ scfproxy clear http -p provider_list -r region_list -o origin
 * **腾讯云**：部署大陆外地区速度极慢，目前仅支持大陆地区
 * **AWS**：暂不支持反向代理
 
+AWS 需要自行参考 [Lambda 执行角色](https://docs.aws.amazon.com/zh_cn/lambda/latest/dg/lambda-intro-execution-role.html)
+创建角色，然后将对应角色 ARN 填入 `sdk.toml` 文件中。
+
 # 交流群
 
 该项目仍处于测试阶段，可能存在一些 bug，欢迎提交 issue 或者进入微信群交流。
