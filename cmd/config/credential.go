@@ -11,6 +11,11 @@ AccessKeyId = ""
 AccessKeySecret = "" 
 AccountId = ""
 
+[aws]
+AccessKeyId = ""
+AccessKeySecret = ""
+RoleArn = ""
+
 [tencent]
 # Named SecretId in tencent
 AccessKeyId = ""
@@ -26,6 +31,7 @@ type Credential struct {
 	AccessKeyId     string
 	AccessKeySecret string
 	AccountId       string
+	RoleArn         string
 }
 
 func (c Credential) isSet() bool {
@@ -35,6 +41,7 @@ func (c Credential) isSet() bool {
 type ProviderConfig struct {
 	Alibaba *Credential
 	Tencent *Credential
+	Aws     *Credential
 }
 
 func LoadProviderConfig(path string) (*ProviderConfig, error) {
@@ -56,6 +63,8 @@ func (c *ProviderConfig) ProviderCredentialByName(provider string) *Credential {
 		return c.Alibaba
 	case "tencent":
 		return c.Tencent
+	case "aws":
+		return c.Aws
 	default:
 		return nil
 	}

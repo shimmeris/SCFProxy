@@ -79,7 +79,7 @@ func clearHttp(providers []sdk.Provider, completely bool) error {
 			}
 
 			opts := &sdk.FunctionOpts{
-				Namespace: Namespace,
+				Namespace:    Namespace,
 				FunctionName: HTTPFunctionName,
 				TriggerName:  HTTPTriggerName,
 				OnlyTrigger:  !completely,
@@ -121,7 +121,7 @@ func clearSocks(providers []sdk.Provider) error {
 			provider, region := sp.Name(), sp.Region()
 
 			opts := &sdk.FunctionOpts{
-				Namespace: Namespace,
+				Namespace:    Namespace,
 				FunctionName: SocksFunctionName,
 			}
 			err := sp.ClearSocksProxy(opts)

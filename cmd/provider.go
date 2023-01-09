@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/shimmeris/SCFProxy/cmd/config"
 	"github.com/shimmeris/SCFProxy/sdk"
 	"github.com/shimmeris/SCFProxy/sdk/provider/alibaba"
+	"github.com/shimmeris/SCFProxy/sdk/provider/aws"
 	"github.com/shimmeris/SCFProxy/sdk/provider/tencent"
 )
 
@@ -17,8 +20,8 @@ const (
 )
 
 var (
-	allProviders     = []string{"alibaba", "tencent"}
-	httpProviders    = []string{"alibaba", "tencent"}
+	allProviders     = []string{"alibaba", "tencent", "aws"}
+	httpProviders    = []string{"alibaba", "tencent", "aws"}
 	socksProviders   = []string{"alibaba", "tencent"}
 	reverseProviders = []string{"tencent"}
 )
@@ -42,6 +45,8 @@ func listRegions(provider string) []string {
 		return alibaba.Regions()
 	case "tencent":
 		return tencent.Regions()
+	case "aws":
+		return aws.Regions()
 	default:
 		return nil
 	}
@@ -59,7 +64,10 @@ func createProvider(name, region string, config *config.ProviderConfig) (sdk.Pro
 	//	return huawei.New(ak, sk, region), nil
 	case "tencent":
 		return tencent.New(ak, sk, region)
+	case "aws":
+		roleArn := c.RoleArn
+		return aws.New(ak, sk, region, roleArn)
 	default:
-		return nil, nil
+		return nil, fmt.Errorf("%s is not a valid provider", name)
 	}
 }

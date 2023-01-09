@@ -51,9 +51,6 @@ func init() {
 	deployCmd.Flags().StringSliceP("region", "r", nil, "specify which regions of cloud providers deploy proxy")
 	deployCmd.Flags().StringP("config", "c", config.ProviderConfigPath, "path of provider credential file")
 
-	// deploy socks needed
-
-
 	// deploy reverse needed
 	deployCmd.Flags().StringP("origin", "o", "", "[reverse] Address of the reverse proxy back to the source")
 	deployCmd.Flags().StringSlice("ip", nil, "[reverse] Restrict ips which can access the reverse proxy address")
@@ -85,7 +82,7 @@ func createProviders(cmd *cobra.Command) ([]sdk.Provider, error) {
 
 		regions := parseRegionPatterns(p, regionPatterns)
 		if len(regions) == 0 {
-			logrus.Error("No region avalible, pleast use list cmd to ")
+			logrus.Errorf("No region avalible, pleast use `list region -p %s` cmd to check available regions", p)
 			continue
 		}
 
@@ -200,7 +197,7 @@ func deployHttp(providers []sdk.Provider) error {
 			}
 
 			opts := &sdk.FunctionOpts{
-				Namespace: Namespace,
+				Namespace:    Namespace,
 				FunctionName: HTTPFunctionName,
 				TriggerName:  HTTPTriggerName,
 				OnlyTrigger:  onlyTrigger,
@@ -245,7 +242,7 @@ func deploySocks(providers []sdk.Provider) error {
 			}
 
 			opts := &sdk.FunctionOpts{
-				Namespace: Namespace,
+				Namespace:    Namespace,
 				FunctionName: SocksFunctionName,
 			}
 			if err := sp.DeploySocksProxy(opts); err != nil {
@@ -314,4 +311,3 @@ func deployReverse(providers []sdk.Provider, origin string, ips []string) error 
 	wg.Wait()
 	return conf.Save()
 }
-

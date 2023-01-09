@@ -7,7 +7,6 @@ import (
 	"sync"
 )
 
-
 type SocksConfig struct {
 	mu      sync.RWMutex
 	Records map[string]map[string]string
@@ -27,7 +26,7 @@ func LoadSocksConfig() (*SocksConfig, error) {
 	return conf, err
 }
 
-func (c *SocksConfig) Has(provider, region string) (bool) {
+func (c *SocksConfig) Has(provider, region string) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	_, ok := c.Records[provider][region]
@@ -58,7 +57,7 @@ func (c *SocksConfig) Save() error {
 func (c *SocksConfig) ToDoubleArray() [][]string {
 	data := [][]string{}
 	for provider, rmap := range c.Records {
-		for region, _ := range rmap {
+		for region := range rmap {
 			data = append(data, []string{provider, region})
 		}
 	}
