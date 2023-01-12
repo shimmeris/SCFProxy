@@ -49,7 +49,7 @@ func ServeProxy(opts *Options) error {
 		}()
 	}()
 
-	fmt.Println("HTTP proxy start successfully")
+	fmt.Printf("HTTP proxy listening at %s\n", opts.ListenAddr)
 	return p.Serve(l)
 }
 
