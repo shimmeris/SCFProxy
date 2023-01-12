@@ -77,7 +77,7 @@ the [IAM](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/
 the [Lambda Execution Roles](https://docs.aws.amazon.com/zh_cn/lambda/latest/dg/lambda-intro-execution-role.html) page,
 and then filling the corresponding role ARN into the ` sdk.toml` file.
 
-## Usage guide
+# Usage guide
 
 ## Query
 
