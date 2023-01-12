@@ -7,7 +7,7 @@ SCFProxy 是一个基于云服务商提供的云函数及 API 网关功能实现
 前往 [Release](https://github.com/shimmeris/SCFProxy/releases/) 页面下载对应系统压缩包即可。如仍需使用 Python
 旧版，请切换至 [Python](https://github.com/shimmeris/SCFProxy/tree/Python) 分支
 
-# 使用指南
+# 配置指南
 
 ## 配置凭证
 
@@ -15,11 +15,69 @@ SCFProxy 是一个基于云服务商提供的云函数及 API 网关功能实现
 
 之后运行 `deploy/clear` 命令都将默认读取此文件，也可通过 `-c config` 参数指定。
 
-## List
+## 支持厂商
+
+### 阿里云
+
+#### 限制
+
+不支持反向代理
+
+#### 凭证
+
+阿里云需要下述凭证:
+
+* AccountId
+* AccessKeyId
+* AccessKeySecret
+
+`AccountId` 可在主页右上角个人信息处获取
+![accountId](img/aliyun_accountid.jpg)
+
+`AccessKeyId/AccessKeySecret` 可在 [IAM](https://ram.console.aliyun.com/users) 页面添加子用户生成密钥
+
+### 腾讯云
+
+#### 限制
+
+部署中国大陆外地区速度极慢，目前仅支持中国大陆的区域
+
+#### 凭证
+
+腾讯云需要下述凭证:
+
+* SecretId
+* SecretKey
+
+可在 [IAM](https://console.cloud.tencent.com/cam) 页面添加子用户生成密钥
+
+### AWS
+
+#### 限制
+
+暂不支持反向代理
+
+#### 凭证
+
+AWS 需要下述凭证:
+
+* AccessKeyId
+* AccessKeySecret
+* RoleArn
+
+`AccessKeyId/AccessKeySecret`
+可在 [IAM](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-east-1#/security_credentials) 页面生成密钥
+
+`RoleArn` 可参考[Lambda 执行角色](https://docs.aws.amazon.com/zh_cn/lambda/latest/dg/lambda-intro-execution-role.html)
+页面创建角色，然后将对应角色 ARN 填入 `sdk.toml` 文件中。
+
+# 使用指南
+
+## 查询
 
 `scfproxy list` 接受 `provider`, `region`, `http`, `socks`, `reverse` 五种参数。
 
-`provider` 参数列出目前支持的云厂商，可通过 `-m module` 参数指定模块列出支持特定代理的厂商。
+`provider` 参数列出目前支持的云厂商，可通过 `-m [http|socks|reverse]` 参数过滤出支持某种代理的厂商。
 
 `region` 参数用于列出云厂商可部署的区域，需使用 `-p providers` 指定需要查看的云厂商
 
@@ -33,22 +91,22 @@ SCFProxy 是一个基于云服务商提供的云函数及 API 网关功能实现
 scfproxy deploy http -p provider_list -r region_list [-c providerConfigPath]
 ```
 
-`providerConfigPath` 为保存有各个云厂商 ak/sk 的配置文件，默认位置在 `~/.config/scfproxy`
-
 `provider_list` 与 `region_list` 传入的参数列表以 `,` 分隔。
 
-`region_list` 支持如下 4 种形式（在所有 `deploy` 及 `clear` 命令上都支持）
+`region_list` 支持如下 4 种形式（在 `deploy` 及 `clear` 命令上都支持）
 
 * `*` 表示所有区域
-* `area-*` 表示该 area 区域支持的所有地区
+* `area-*` 表示带有 `area` 区域前缀的所有地区
 * `are-num` 表示该 area 区域支持的前 `num` 个地区(代码硬编码顺序返回)
 * 标准形式，即云厂商所提供的标准 region 形式
 
-对于提供多个 `provider` 的情况下，将对每个 `provider` 进行上述 `region` 形式的解析与查找，不存在的 `region` 将被忽略
-
+针对参数中提供的每一个 `provider`，`region` 都会按照上述方式进行解析，不存在的 `region` 将被忽略
 例子：
 
 ```console
+// 查看阿里和腾讯支持的区域
+scfproxy list -p alibaba,tencent
+
 scfproxy deploy http -p alibaba,tencent -r ap-1,eu-*,cn-shanghai
 ```
 
@@ -57,14 +115,21 @@ scfproxy deploy http -p alibaba,tencent -r ap-1,eu-*,cn-shanghai
 1. 在 `alibaba` 上部署 `ap-northeast-1`, `eu-central-1`, ` eu-west-1`, `cn-shanghai` 区域的 http 代理
 2. 在 `tencent` 上部署 `ap-beijing` 区域的 http 代理
 
-### 运行
+所有通过该项目部署的 HTTP 代理将会保存在 `~/.config/scfproxy/http.json` 中，用于运行 http 代理时加载。
 
-```console
-scfproxy http -l port [-c cert_path] [-k key_path]
-```
+### 运行
 
 首次运行会在 `~/.confg/scfproxy/cert` 目录生成 `scfproxy.cer` 及 `scfproxy.key` 证书，需要将其导入系统证书并信任才可以代理
 https 请求。
+
+```console
+scfproxy http -l address [-c cert_path] [-k key_path]
+```
+
+`-l address` 格式为 `ip:port`，可省略 ip 使用 `:port` 形式进行部署，效果等同于 `0.0.0.0:port`
+
+HTTP 代理运行将读取 `~/.config/scfproxy/http.json` 中的记录，如果存在多个已部署的云函数（不区分厂商），每个 HTTP
+请求将随机挑选其中的云函数进行代理。
 
 ### 清理
 
@@ -76,12 +141,10 @@ scfproxy clear http -p provider_list -r region_list [--completely]
 
 ## SOCKS5 代理
 
-### 部署 & 清理
-
-与 HTTP 代理相同，只需替换 `http` 参数为 `socks`
+### 部署
 
 ```console
-scfproxy deploy socks -p provider_list -r region_list
+scfproxy deploy socks -p provider_list -r region_list [-c providerConfigPath]
 ```
 
 ### 运行
@@ -92,29 +155,42 @@ scfproxy socks -l socks_port -s scf_port -h address [--auth user:pass] [-c provi
 
 `-l socks_port` 监听 socks_port，等待用户的 socks5 连接
 
-`-s scf_port` 监听 scf_port，等待来自云函数的连接，需要部署命令中 `address` 参数的端口一致
+`-s scf_port` 监听 scf_port，等待来自云函数的连接
 
 `-h address` 用于指定云函数回连的 vps 地址
 
 `--auth [user:pass]` 用于指定 socks 认证信息，默认无认证
 
-socks 命令需要读取 ak/sk 用于触发函数，且通过读取 deploy 后生成的 `~/.config/scfproxy/socks.json`
-文件确定需要调用函数的厂商及地区，因此需要将上述两个文件复制到 vps 对应位置运行。
+socks 命令需要加载 `sdk.toml` 用于触发函数，及部署后生成的 `~/.config/scfproxy/socks.json`
+用于确定可以调用的函数的厂商及地区，因此需要将上述两个文件复制到 vps 对应位置运行。
 
-目前 socks 代理部署的函数超时时间为 15m，因此如果将 socks 代理用于一个长连接如 mysql 连接，需自行安排好时间，避免时间一到导致连接意外断开。
+如果存在多个已部署的云函数（不区分厂商），socks 代理将触发每个云函数的执行，并监听来自他们的连接，之后每个来自客户端的 socks
+连接将随机挑选其中的来自云函数的连接进行代理。
+
+
+> 目前 socks 代理部署的函数超时时间为 15m，因此如果将 socks 代理用于一个长连接如 mysql 连接，需自行安排好时间，避免时间一到导致连接意外断开。
+>
 
 ### 使用效果
 
 **长连接**
 
-借助 proxifier 通过 scfproxy 的 socks5 代理进行 mysql 连接，可以看到连接中的 ip 地址来自于阿里云的机器
+通过 socks5 代理进行 mysql 连接，可以看到连接中的 ip 地址来自于阿里云的机器，且命令之间不会出现网络中断。
 ![mysql](img/mysql.jpg)
 
 **短连接**
-与 http 类似，每次短连接将获得一个新的 ip
-![short](img/short.jpg)
+与 http 类似，每次连接将触发函数执行
+![short](img/socks.jpg)
+
+### 清理
+
+```console
+scfproxy clear socks -p provider_list -r region_list
+```
 
 ## 反向代理
+
+> **目前仅腾讯云支持反向代理**
 
 ### 部署
 
@@ -171,7 +247,7 @@ websocat ws-l:0.0.0.0:port - --binary -E --uncompress-zlib
 scfproxy deploy reverse ... -o ws://vps --ip victim
 ```
 
-以 frp 代理 SOCKS 为例，客户端配置：
+以 frp 为例，客户端配置：
 
 ```ini
 [common]
@@ -197,16 +273,7 @@ use_compression = true
 scfproxy clear http -p provider_list -r region_list -o origin
 ```
 
-与 HTTP 及 SOCKS 代理不同，反向代理没有 `--completely` 参数，但需要指定 `origin` 参数用于定位需要删除的服务
-
-# 支持厂商
-
-* **阿里云**：不支持反向代理
-* **腾讯云**：部署大陆外地区速度极慢，目前仅支持大陆地区
-* **AWS**：暂不支持反向代理
-
-AWS 需要自行参考 [Lambda 执行角色](https://docs.aws.amazon.com/zh_cn/lambda/latest/dg/lambda-intro-execution-role.html)
-创建角色，然后将对应角色 ARN 填入 `sdk.toml` 文件中。
+`-o origin` 参数用于定位需要删除的服务
 
 # 交流群
 
@@ -216,7 +283,7 @@ AWS 需要自行参考 [Lambda 执行角色](https://docs.aws.amazon.com/zh_cn/l
 
 # TODO
 
-- [x] 优化 socks 功能
+- [x] 优化并添加其他厂商的反向代理功能
 - [ ] 优化代码
-- [ ] 美化输出
-- [ ] 增加华为云，AWS，GCP 等其他云厂商
+- [ ] 美化输出及错误处理
+- [ ] 增加华为云，GCP，Azure 等其他云厂商
