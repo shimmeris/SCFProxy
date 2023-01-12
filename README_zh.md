@@ -270,7 +270,7 @@ use_compression = true
 ### 清理
 
 ```console
-scfproxy clear http -p provider_list -r region_list -o origin
+scfproxy clear reverse -p provider_list -r region_list -o origin
 ```
 
 `-o origin` 参数用于定位需要删除的服务
