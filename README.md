@@ -1,5 +1,7 @@
 # SCFProxy
 
+[README](README.md) | [中文文档](README_zh.md)
+
 SCFProxy is a tool that implements multiple proxies based on cloud functions and API gateway functions provided by cloud
 providers.
 
@@ -142,7 +144,7 @@ equivalent to `0.0.0.0:port`
 Running HTTP proxy will load the records in `~/.config/scfproxy/http.json`, and if there are multiple deployed cloud
 functions (regardless of provider), each HTTP request will randomly pick one of them to proxy.
 
-### Cleanup
+### Clear
 
 ```console
 scfproxy clear http -p provider_list -r region_list [--completely]
@@ -196,7 +198,7 @@ there is no disconnection between commands.
 Similar to http, each connection will trigger the execution of the function
 ![short](img/socks.jpg)
 
-### Cleanup
+### Clear
 
 ```console
 scfproxy clear socks -p provider_list -r region_list
@@ -263,7 +265,7 @@ This scenario requires intranet penetration software that supports websocket pro
 scfproxy deploy reverse ... -o ws://vps --ip victim
 ```
 
-Using the frp as an example, the client configuration.
+Using [frp](https://github.com/fatedier/frp) as an example, the client configuration.
 
 ```ini
 [common]
@@ -280,20 +282,21 @@ use_encryption = true
 use_compression = true
 ```
 
-The effect is as shown in the picture
+The effect is as shown in the E
+
 ![frp](img/frp.png)
 
-### Cleanup
+### Clear
 
 ```console
-scfproxy clear http -p provider_list -r region_list -o origin
+scfproxy clear reverse -p provider_list -r region_list -o origin
 ```
 
-The ``-o origin`` argument is used to locate the service to be removed
+The `-o origin` argument is used to locate the service to be removed
 
 # TODO
 
-- [x] Optimize and add reverse proxy functionality from other providers
+- [x] Optimize and add reverse proxy functionality for other providers
 - [ ] Optimize the code
 - [ ] Beautify the output and error handling
 - [ ] Add other cloud providers such as Huawei Cloud, GCP, Azure, etc.
