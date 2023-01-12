@@ -1,6 +1,6 @@
 # SCFProxy
 
-SCFProxy 是一个基于云服务商提供的云函数及 API 网关功能实现多种代理的工具。
+SCFProxy 是一个基于多个云服务商提供的云函数及 API 网关实现 HTTP 代理、SOCKS 代理、反向代理的工具。
 
 # 安装
 
@@ -75,13 +75,13 @@ AWS 需要下述凭证:
 
 ## 查询
 
-`scfproxy list` 接受 `provider`, `region`, `http`, `socks`, `reverse` 五种参数。
+`scfproxy list` 接受以下五种参数：
 
-`provider` 参数列出目前支持的云厂商，可通过 `-m [http|socks|reverse]` 参数过滤出支持某种代理的厂商。
-
-`region` 参数用于列出云厂商可部署的区域，需使用 `-p providers` 指定需要查看的云厂商
-
-`http`, `socks`, `reverse` 参数用于列出目前已经部署的代理
+* `provider` 用于列出目前支持的云厂商，可通过 `-m [http|socks|reverse]` 参数过滤出支持某种代理的厂商。
+* `region` 用于列出云厂商可部署的区域，需使用 `-p providers` 指定需要查看的云厂商
+* `http` 列出已部署的 HTTP 代理
+* `socks` 列出已部署的 SOCKS 代理
+* `reverse` 列出已部署的 反向代理
 
 ## HTTP 代理
 
@@ -131,6 +131,10 @@ scfproxy http -l address [-c cert_path] [-k key_path]
 HTTP 代理运行将读取 `~/.config/scfproxy/http.json` 中的记录，如果存在多个已部署的云函数（不区分厂商），每个 HTTP
 请求将随机挑选其中的云函数进行代理。
 
+#### 使用效果
+
+![http](img/http.jpg)
+
 ### 清理
 
 ```console
@@ -171,7 +175,7 @@ socks 命令需要加载 `sdk.toml` 用于触发函数，及部署后生成的 `
 > 目前 socks 代理部署的函数超时时间为 15m，因此如果将 socks 代理用于一个长连接如 mysql 连接，需自行安排好时间，避免时间一到导致连接意外断开。
 >
 
-### 使用效果
+#### 使用效果
 
 **长连接**
 

@@ -2,8 +2,8 @@
 
 [README](README.md) | [中文文档](README_zh.md)
 
-SCFProxy is a tool that implements multiple proxies based on cloud functions and API gateway functions provided by cloud
-providers.
+SCFProxy is a tool to implement HTTP proxy, SOCKS proxy, and reverse proxy based on cloud function and API gateway
+provided by several cloud service providers.
 
 # Installation
 
@@ -81,15 +81,15 @@ and then filling the corresponding role ARN into the ` sdk.toml` file.
 
 ## Query
 
-The `scfproxy list` accepts five arguments `provider`, `region`, `http`, `socks`, `reverse`.
+The `scfproxy list` accepts the following five parameters.
 
-The `provider` parameter lists the currently supported cloud providers and can be filtered by
-the `-m [http|socks|reverse]` parameter to find the providers that support a certain proxy.
-
-The `region` argument is used to list the regions where the cloud provider can be deployed, and the `-p providers`
-parameter is used to specify the cloud provider
-
-The `http`, `socks`, `reverse` arguments are used to list the currently deployed proxies
+* `provider` lists currently supported cloud providers and can be filtered by the `-m [http|socks|reverse]` parameter to
+  find the providers that support a certain proxy.
+* `region` list regions where cloud provider can be deployed, and the `-p providers` parameter is used to specify the
+  cloud provider
+* `http` Lists deployed HTTP proxies
+* `socks` Lists deployed SOCKS proxies
+* `reverse` List deployed reverse proxies
 
 ## HTTP proxy
 
@@ -144,6 +144,10 @@ equivalent to `0.0.0.0:port`
 Running HTTP proxy will load the records in `~/.config/scfproxy/http.json`, and if there are multiple deployed cloud
 functions (regardless of provider), each HTTP request will randomly pick one of them to proxy.
 
+#### Use effect
+
+![http](img/http.jpg)
+
 ### Clear
 
 ```console
@@ -186,7 +190,7 @@ randomly pick one of the connections from the cloud function to proxy.
 > The current timeout for socks proxy functions is 15m, so if you use socks proxy for a long connection such as mysql
 > connection, you need to schedule it by yourself to avoid accidental connection disconnection when the time is up.
 
-### Usage effect
+#### Use effect
 
 **Long connections**
 
