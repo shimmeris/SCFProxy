@@ -283,7 +283,7 @@ scfproxy clear reverse -p provider_list -r region_list -o origin
 
 该项目仍处于测试阶段，可能存在一些 bug，欢迎提交 issue 或者进入微信群交流。
 
-![wechat.png](img/wechat.png)
+![wechat.png](img/wechat.jpg)
 
 # TODO
 
