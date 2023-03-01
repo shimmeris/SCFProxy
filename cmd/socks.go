@@ -26,8 +26,8 @@ var socksCmd = &cobra.Command{
 		key := randomString(socks.KeyLength)
 
 		var wg sync.WaitGroup
+		wg.Add(1)
 		go func() {
-			wg.Add(1)
 			defer wg.Done()
 			socks.Serve(lp, sp, key)
 		}()
