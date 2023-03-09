@@ -61,7 +61,7 @@ func listenClient(port string) {
 }
 
 func forward(conn net.Conn) {
-	scfConn := pickConn(sessions)
+	scfConn := pickConn()
 
 	_forward := func(src, dest net.Conn) {
 		defer src.Close()
@@ -74,7 +74,7 @@ func forward(conn net.Conn) {
 
 }
 
-func pickConn(sessions []*yamux.Session) net.Conn {
+func pickConn() net.Conn {
 	for {
 		l := len(sessions)
 		if l == 0 {
