@@ -5,16 +5,19 @@ import (
 	"log"
 	"net"
 	"strings"
-	"time"
 
 	"github.com/armon/go-socks5"
-	"github.com/hashicorp/yamux"
 )
 
 type Event struct {
-	Key  string
-	Addr string
-	Auth string
+	Key   string
+	Addr  string
+	Auth  string
+	Stype string
+}
+
+type ScfClient interface {
+	GetStream() (net.Conn, error)
 }
 
 func Handle(event Event) error {
@@ -27,13 +30,12 @@ func Handle(event Event) error {
 
 	socksServer := createSocks5(user, pass)
 	for {
-		conn := keepConnect(event.Addr, event.Key)
-		session, err := yamux.Server(conn, nil)
+		scfClient, err := getScfClient(event.Addr, event.Key, event.Stype)
 		if err != nil {
 			continue
 		}
 		for {
-			stream, err := session.Accept()
+			stream, err := scfClient.GetStream()
 			if err != nil {
 				break
 			}
@@ -44,6 +46,17 @@ func Handle(event Event) error {
 				}
 			}()
 		}
+	}
+}
+
+func getScfClient(addr, key, scfType string) (ScfClient, error) {
+	switch scfType {
+	case "yamux":
+		return NewYamuxScfClient(addr, key)
+	case "quic":
+		return NewQuicScfClient(addr, key)
+	default:
+		return nil, fmt.Errorf("Not this scf client type %s", scfType)
 	}
 }
 
@@ -60,22 +73,4 @@ func createSocks5(username, password string) *socks5.Server {
 		log.Fatal(err)
 	}
 	return server
-}
-
-func keepConnect(addr, key string) net.Conn {
-	for i := 0; i < 5; i++ {
-		conn, err := net.Dial("tcp", addr)
-		if err != nil {
-			if i == 4 {
-				fmt.Printf("Connect to %s failed", conn.RemoteAddr().String())
-				return nil
-			}
-			time.Sleep(time.Duration((i+1)*5) * time.Second)
-			fmt.Printf("[%d] Reconnecting\n", i)
-			continue
-		}
-		conn.Write([]byte(key))
-		return conn
-	}
-	return nil
 }
