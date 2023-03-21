@@ -23,14 +23,14 @@ var socksCmd = &cobra.Command{
 		sp, _ := cmd.Flags().GetString("sp")
 		host, _ := cmd.Flags().GetString("host")
 		auth, _ := cmd.Flags().GetString("auth")
-		scfType, _ := cmd.Flags().GetString("type")
+		muxType, _ := cmd.Flags().GetString("mt")
 		key := RandomString(socks.KeyLength)
 
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			socks.Serve(lp, sp, key, scfType)
+			socks.Serve(lp, sp, key, muxType)
 		}()
 
 		providerConfigPath, _ := cmd.Flags().GetString("config")
@@ -38,7 +38,7 @@ var socksCmd = &cobra.Command{
 			Key:   key,
 			Addr:  fmt.Sprintf("%s:%s", host, sp),
 			Auth:  auth,
-			Stype: scfType,
+			Mtype: muxType,
 		}
 		invoke(providerConfigPath, message.Json())
 
@@ -105,7 +105,7 @@ type Message struct {
 	Key   string
 	Addr  string
 	Auth  string
-	Stype string
+	Mtype string
 }
 
 func (m *Message) Json() string {

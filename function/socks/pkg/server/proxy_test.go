@@ -7,7 +7,7 @@ func TestYamuxHandle(t *testing.T) {
 		Key:   "ung3oozaeTheil2a",
 		Addr:  "127.0.0.1:10899",
 		Auth:  "admin:admin",
-		Stype: "yamux",
+		Mtype: "yamux",
 	})
 }
 
@@ -16,6 +16,6 @@ func TestQuicHandle(t *testing.T) {
 		Key:   "ung3oozaeTheil2a",
 		Addr:  "127.0.0.1:10899",
 		Auth:  "admin:admin",
-		Stype: "quic",
+		Mtype: "quic",
 	})
 }

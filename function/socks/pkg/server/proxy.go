@@ -13,7 +13,7 @@ type Event struct {
 	Key   string
 	Addr  string
 	Auth  string
-	Stype string
+	Mtype string
 }
 
 type ScfClient interface {
@@ -30,7 +30,7 @@ func Handle(event Event) error {
 
 	socksServer := createSocks5(user, pass)
 	for {
-		scfClient, err := getScfClient(event.Addr, event.Key, event.Stype)
+		scfClient, err := getScfClient(event.Addr, event.Key, event.Mtype)
 		if err != nil {
 			continue
 		}
@@ -49,14 +49,14 @@ func Handle(event Event) error {
 	}
 }
 
-func getScfClient(addr, key, scfType string) (ScfClient, error) {
-	switch scfType {
+func getScfClient(addr, key, muxType string) (ScfClient, error) {
+	switch muxType {
 	case "yamux":
 		return NewYamuxScfClient(addr, key)
 	case "quic":
 		return NewQuicScfClient(addr, key)
 	default:
-		return nil, fmt.Errorf("Not this scf client type %s", scfType)
+		return nil, fmt.Errorf("Not this scf client type %s", muxType)
 	}
 }
 

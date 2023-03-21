@@ -60,8 +60,8 @@ func forward(wg *sync.WaitGroup, src, dest Stream) {
 	io.Copy(src, dest)
 }
 
-func getScfServer(scfType string) (ScfServer, error) {
-	switch scfType {
+func getScfServer(muxType string) (ScfServer, error) {
+	switch muxType {
 	case "yamux":
 		return &YamuxScfServer{
 			Sessions: make([]*yamux.Session, 0),
@@ -69,12 +69,12 @@ func getScfServer(scfType string) (ScfServer, error) {
 	case "quic":
 		return &QuicScfServer{}, nil
 	default:
-		return nil, fmt.Errorf("Not this Scf Server Type %s", scfType)
+		return nil, fmt.Errorf("Not this Scf Server Type %s", muxType)
 	}
 }
 
-func Serve(socksPort, scfPort, key, scfType string) {
-	scfServer, err := getScfServer(scfType)
+func Serve(socksPort, scfPort, key, muxType string) {
+	scfServer, err := getScfServer(muxType)
 	if err != nil {
 		return
 	}
