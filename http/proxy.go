@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -23,6 +24,16 @@ func ServeProxy(opts *Options) error {
 	p := martian.NewProxy()
 	defer p.Close()
 
+	// Prevent scfproxy from recursively connecting to itself.
+	_, lport, _ := net.SplitHostPort(opts.ListenAddr)
+	p.SetDial(func(network, address string) (net.Conn, error) {
+		host, port, _ := net.SplitHostPort(address)
+		if port == lport && (host == "localhost" || host == "127.0.0.1" || host == "::1") {
+			return nil, errors.New("Detecting recursive connection")
+		}
+		return net.Dial(network, address)
+	})
+
 	l, err := net.Listen("tcp", opts.ListenAddr)
 	if err != nil {
 		logrus.Fatal(err)
@@ -32,7 +43,7 @@ func ServeProxy(opts *Options) error {
 		logrus.Error(err)
 	}
 
-	modifier, err := NewScfModifier(opts.Apis)
+	modifier, err := NewScfModifier(opts.Apis, lport)
 	if err != nil {
 		return err
 	}

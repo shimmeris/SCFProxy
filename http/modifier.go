@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
+	"net"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/google/martian/v3"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,6 +24,7 @@ func init() {
 type ScfModifier struct {
 	apis   []string
 	length int
+	port   string
 }
 
 type httpRequest struct {
@@ -37,12 +41,20 @@ type httpResponse struct {
 	Body   string            `json:"content"`
 }
 
-func NewScfModifier(apis []string) (*ScfModifier, error) {
+func NewScfModifier(apis []string, lport string) (*ScfModifier, error) {
 	length := len(apis)
-	return &ScfModifier{apis: apis, length: length}, nil
+	return &ScfModifier{apis: apis, length: length, port: lport}, nil
 }
 
 func (m *ScfModifier) ModifyRequest(req *http.Request) error {
+	// Prevent scfproxy from recursively connecting to itself.
+	remoteIp, _, _ := net.SplitHostPort(req.RemoteAddr)
+	if remoteIp == req.URL.Hostname() && m.port == req.URL.Port() {
+		ctx := martian.NewContext(req)
+		ctx.SkipRoundTrip()
+		return errors.New("Detecting recursive connection")
+	}
+
 	if req.Method == http.MethodConnect {
 		return nil
 	}
@@ -69,7 +81,7 @@ func (m *ScfModifier) ModifyRequest(req *http.Request) error {
 	logrus.Debugf("%s - %s", req.URL, scfApi)
 	scfReq, err := http.NewRequest("POST", scfApi, bytes.NewReader(data))
 	*req = *scfReq
-	//logrus.Print(provider, scfApi)
+
 	return nil
 }
 
