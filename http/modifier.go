@@ -66,6 +66,7 @@ func (m *ScfModifier) ModifyRequest(req *http.Request) error {
 
 	rawBody, err := io.ReadAll(req.Body)
 	if err != nil {
+		logrus.Debugf("Error reading request body")
 		return err
 	}
 	req.Body.Close()
@@ -96,6 +97,7 @@ func (m *ScfModifier) ModifyResponse(res *http.Response) error {
 	var hr httpResponse
 	err = json.Unmarshal(rawBody, &hr)
 	if err != nil {
+		logrus.Debugf("Error Unmarshaling %s", string(rawBody))
 		return err
 	}
 
@@ -109,6 +111,7 @@ func (m *ScfModifier) ModifyResponse(res *http.Response) error {
 
 	body, err := base64.StdEncoding.DecodeString(hr.Body)
 	if err != nil {
+		logrus.Debugf("Error decoding base64 %s", hr.Body)
 		return err
 	}
 	res.Body = io.NopCloser(bytes.NewReader(body))
