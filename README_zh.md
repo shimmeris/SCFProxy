@@ -105,7 +105,7 @@ scfproxy deploy http -p provider_list -r region_list [-c providerConfigPath]
 
 ```console
 // 查看阿里和腾讯支持的区域
-scfproxy list -p alibaba,tencent
+scfproxy list -p alibaba,tencent region
 
 scfproxy deploy http -p alibaba,tencent -r ap-1,eu-*,cn-shanghai
 ```
