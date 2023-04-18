@@ -115,7 +115,7 @@ Example:
 
 ```console
 // Check the regions supported by Alibaba and Tencent
-scfproxy list -p alibaba,tencent
+scfproxy list region -p alibaba,tencent
 
 scfproxy deploy http -p alibaba,tencent -r ap-1,eu-*,cn-shanghai
 ```
