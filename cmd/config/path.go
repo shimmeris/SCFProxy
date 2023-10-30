@@ -25,7 +25,7 @@ func init() {
 func userHomeDir() string {
 	usr, err := user.Current()
 	if err != nil {
-		logrus.Fatal("Could not get user home directory: %s\n", err)
+		logrus.Fatalf("Could not get user home directory: %s\n", err)
 	}
 	return usr.HomeDir
 }

@@ -32,10 +32,10 @@ scfproxy is a tool that implements multiple proxies based on cloud functions and
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !fileutil.PathExists(config.ProviderConfigPath) {
 			f, err := os.Create(config.ProviderConfigPath)
-			defer f.Close()
 			if err != nil {
 				return err
 			}
+			defer f.Close()
 			if _, err := f.Write([]byte(config.ProviderConfigContent)); err != nil {
 				return err
 			}
