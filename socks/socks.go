@@ -3,48 +3,31 @@ package socks
 import (
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
-	"time"
 
 	"github.com/hashicorp/yamux"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/exp/slices"
 )
 
 const KeyLength = 16
 
-var sessions []*yamux.Session
-
-func listenScf(port, key string) {
-	ln, err := net.Listen("tcp", "0.0.0.0:"+port)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			logrus.Fatal(err)
-		}
-
-		buf := make([]byte, KeyLength)
-		conn.Read(buf)
-		if string(buf) == key {
-			fmt.Printf("New scf connection from %s\n", conn.RemoteAddr().String())
-			session, err := yamux.Client(conn, nil)
-			if err != nil {
-				logrus.Error(err)
-			}
-			sessions = append(sessions, session)
-		}
-	}
+type ScfServer interface {
+	Listen(port, key string)
+	GetStream() Stream
+	io.Closer
 }
 
-func listenClient(port string) {
+type Stream interface {
+	io.Reader
+	io.Writer
+	io.Closer
+}
+
+func listenClient(scfServer ScfServer, port string) {
 	ln, err := net.Listen("tcp", "0.0.0.0:"+port)
 	if err != nil {
 		logrus.Fatal(err)
@@ -56,63 +39,57 @@ func listenClient(port string) {
 			logrus.Error("listen client failed")
 		}
 		fmt.Printf("New socks connection from %s\n", conn.RemoteAddr().String())
-		go forward(conn)
+		go Forward(scfServer, conn)
 	}
 }
 
-func forward(conn net.Conn) {
-	scfConn := pickConn()
-
-	_forward := func(src, dest net.Conn) {
-		defer src.Close()
-		defer dest.Close()
-		io.Copy(src, dest)
-	}
-
-	go _forward(conn, scfConn)
-	go _forward(scfConn, conn)
-
+func Forward(scfServer ScfServer, conn Stream) {
+	scfConn := scfServer.GetStream()
+	defer scfConn.Close()
+	defer conn.Close()
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go forward(wg, conn, scfConn)
+	wg.Add(1)
+	go forward(wg, scfConn, conn)
+	wg.Wait()
 }
 
-func pickConn() net.Conn {
-	for {
-		l := len(sessions)
-		if l == 0 {
-			logrus.Debug("No scf server connections")
-			time.Sleep(5 * time.Second)
-			continue
-		}
-		n := rand.Intn(l)
-		conn, err := sessions[n].Open()
+func forward(wg *sync.WaitGroup, src, dest Stream) {
+	defer wg.Done()
+	io.Copy(src, dest)
+}
 
-		// remove inactive connections
-		if err != nil {
-			fmt.Printf("Remove invalid connection from %s\n", sessions[n].RemoteAddr().String())
-			sessions[n].Close()
-			sessions = slices.Delete(sessions, n, n+1)
-			continue
-		}
-
-		return conn
+func getScfServer(muxType string) (ScfServer, error) {
+	switch muxType {
+	case "yamux":
+		return &YamuxScfServer{
+			Sessions: make([]*yamux.Session, 0),
+		}, nil
+	case "quic":
+		return &QuicScfServer{}, nil
+	default:
+		return nil, fmt.Errorf("Not this Scf Server Type %s", muxType)
 	}
 }
 
-func Serve(socksPort, scfPort, key string) {
+func Serve(socksPort, scfPort, key, muxType string) {
+	scfServer, err := getScfServer(muxType)
+	if err != nil {
+		return
+	}
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 		go func() {
 			<-c
-			for _, s := range sessions {
-				s.Close()
-			}
+			scfServer.Close()
 			os.Exit(0)
 		}()
 	}()
 
 	fmt.Printf("scf listening on 0.0.0.0 %s\n", scfPort)
-	go listenScf(scfPort, key)
+	go scfServer.Listen(scfPort, key)
 	fmt.Printf("socks listening on 0.0.0.0 %s\n", socksPort)
-	listenClient(socksPort)
-
+	listenClient(scfServer, socksPort)
 }

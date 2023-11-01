@@ -23,20 +23,22 @@ var socksCmd = &cobra.Command{
 		sp, _ := cmd.Flags().GetString("sp")
 		host, _ := cmd.Flags().GetString("host")
 		auth, _ := cmd.Flags().GetString("auth")
-		key := randomString(socks.KeyLength)
+		muxType, _ := cmd.Flags().GetString("mt")
+		key := RandomString(socks.KeyLength)
 
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			socks.Serve(lp, sp, key)
+			socks.Serve(lp, sp, key, muxType)
 		}()
 
 		providerConfigPath, _ := cmd.Flags().GetString("config")
 		message := &Message{
-			Key:  key,
-			Addr: fmt.Sprintf("%s:%s", host, sp),
-			Auth: auth,
+			Key:   key,
+			Addr:  fmt.Sprintf("%s:%s", host, sp),
+			Auth:  auth,
+			Mtype: muxType,
 		}
 		invoke(providerConfigPath, message.Json())
 
@@ -89,6 +91,7 @@ func init() {
 	rootCmd.AddCommand(socksCmd)
 	socksCmd.Flags().StringP("lp", "l", "", "listen port for client socks5 connection")
 	socksCmd.Flags().StringP("sp", "s", "", "listen port for cloud function's connection")
+	socksCmd.Flags().StringP("mt", "m", "yamux", "multiplexing technology, default yamux")
 	socksCmd.Flags().StringP("host", "h", "", "host:port address of the cloud function callback")
 	socksCmd.Flags().StringP("config", "c", config.ProviderConfigPath, "path of provider credential file")
 	socksCmd.Flags().String("auth", "", "username:password for socks proxy authentication")
@@ -99,9 +102,10 @@ func init() {
 }
 
 type Message struct {
-	Key  string
-	Addr string
-	Auth string
+	Key   string
+	Addr  string
+	Auth  string
+	Mtype string
 }
 
 func (m *Message) Json() string {
@@ -111,7 +115,7 @@ func (m *Message) Json() string {
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-func randomString(n int) string {
+func RandomString(n int) string {
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
