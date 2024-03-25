@@ -279,11 +279,6 @@ scfproxy clear reverse -p provider_list -r region_list -o origin
 
 `-o origin` 参数用于定位需要删除的服务
 
-# 交流群
-
-该项目仍处于测试阶段，可能存在一些 bug，欢迎提交 issue 或者添加我的微信（备注 scfproxy），进群交流。
-
-![wechat.png](img/wechat.jpg)
 
 # TODO
 
