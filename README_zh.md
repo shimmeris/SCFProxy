@@ -2,6 +2,14 @@
 
 SCFProxy 是一个基于多个云服务商提供的云函数及 API 网关实现 HTTP 代理、SOCKS 代理、反向代理的工具。
 
+它当前支持将以下云服务商的函数计算服务转换为 HTTP 和 SOCKS 代理：
+
+- 阿里云
+- 腾讯云
+- 华为云
+- AWS（亚马逊网络服务）
+- 百度云
+
 # 安装
 
 前往 [Release](https://github.com/shimmeris/SCFProxy/releases/) 页面下载对应系统压缩包即可。如仍需使用 Python

@@ -7,6 +7,7 @@ import (
 	"github.com/shimmeris/SCFProxy/sdk"
 	"github.com/shimmeris/SCFProxy/sdk/provider/alibaba"
 	"github.com/shimmeris/SCFProxy/sdk/provider/aws"
+	"github.com/shimmeris/SCFProxy/sdk/provider/baidu"
 	"github.com/shimmeris/SCFProxy/sdk/provider/tencent"
 )
 
@@ -21,7 +22,7 @@ const (
 
 var (
 	allProviders     = []string{"alibaba", "tencent", "aws"}
-	httpProviders    = []string{"alibaba", "tencent", "aws"}
+	httpProviders    = []string{"alibaba", "tencent", "aws", "baidu"}
 	socksProviders   = []string{"alibaba", "tencent"}
 	reverseProviders = []string{"tencent"}
 )
@@ -47,6 +48,8 @@ func listRegions(provider string) []string {
 		return tencent.Regions()
 	case "aws":
 		return aws.Regions()
+	case "baidu":
+		return baidu.Regions()
 	default:
 		return nil
 	}

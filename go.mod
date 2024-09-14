@@ -11,6 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.7
 	github.com/aws/aws-sdk-go-v2/service/apigateway v1.15.28
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.26.2
+	github.com/baidubce/bce-sdk-go v0.9.191
 	github.com/google/martian/v3 v3.3.2
 	github.com/hashicorp/yamux v0.1.1
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.7
